@@ -38,7 +38,7 @@ body {
 }
 
 .app-header {
-    padding: 1rem 2rem;
+    padding: 0.8rem 1.5rem;
     background-color: var(--panel-bg);
     border-bottom: 1px solid var(--border-color);
     text-align: center;
@@ -46,13 +46,13 @@ body {
 
 .app-header h1 {
     color: var(--accent-color);
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
 }
 
 .description {
     color: var(--secondary-color);
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .content-container {
@@ -62,8 +62,7 @@ body {
 }
 
 .visualization-container {
-    flex: 1;
-    padding: 2rem;
+    flex: 3;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -76,31 +75,96 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: var(--panel-bg);
-    overflow: auto;
-    min-height: 400px;
+    overflow: hidden;
+    margin: 1rem;
+    min-height: 300px;
+}
+
+.git-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Estilos para D3 */
+.links path {
+    stroke-opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.links path:hover {
+    stroke-opacity: 1;
+    stroke-width: 3px;
+}
+
+.link.merge-link {
+    stroke-dasharray: 5, 5;
+}
+
+.nodes circle {
+    fill: var(--panel-bg);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.nodes circle:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+}
+
+.nodes text {
+    fill: var(--terminal-text);
+    font-size: 0.7rem;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.branch-labels rect {
+    transition: all 0.3s ease;
+}
+
+.branch-labels text {
+    font-size: 0.7rem;
+    pointer-events: none;
+}
+
+.current-branch {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+}
+
+.head-commit {
+    stroke-width: 4px !important;
+    filter: drop-shadow(0 0 4px rgba(189, 147, 249, 0.5));
+}
+
+.highlighted {
+    animation: pulse 1.5s infinite;
 }
 
 .repo-state {
-    margin-top: 1rem;
     background-color: var(--panel-bg);
     border-radius: 8px;
+    margin: 0 1rem 1rem 1rem;
     padding: 1rem;
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    max-height: 30%;
+    overflow-y: auto;
 }
 
 .state-section {
     flex: 1;
-    min-width: 250px;
+    min-width: 180px;
 }
 
 .state-section h3 {
     color: var(--accent-color);
     margin-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+    font-size: 0.9rem;
 }
 
 .branch-name {
@@ -111,10 +175,11 @@ body {
 .state-content {
     color: var(--terminal-text);
     background-color: var(--terminal-bg);
-    padding: 0.75rem;
+    padding: 0.5rem;
     border-radius: 4px;
-    max-height: 120px;
+    max-height: 100px;
     overflow-y: auto;
+    font-size: 0.8rem;
 }
 
 .state-content ul {
@@ -122,11 +187,12 @@ body {
 }
 
 .state-content li {
-    padding: 0.25rem 0;
+    padding: 0.2rem 0;
 }
 
 .command-container {
-    width: 450px;
+    flex: 2;
+    max-width: 400px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -140,20 +206,20 @@ body {
     background-color: var(--terminal-bg);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .terminal-header {
     background-color: var(--border-color);
-    padding: 0.5rem;
+    padding: 0.4rem;
     display: flex;
     align-items: center;
     position: relative;
 }
 
 .terminal-button {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     margin-right: 6px;
 }
@@ -175,36 +241,37 @@ body {
     left: 50%;
     transform: translateX(-50%);
     color: var(--text-color);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 .terminal-content {
-    padding: 1rem;
+    padding: 0.8rem;
     color: var(--terminal-text);
     font-family: 'Fira Code', monospace;
-    font-size: 0.9rem;
-    max-height: 350px;
+    font-size: 0.85rem;
+    max-height: 180px;
     overflow-y: auto;
 }
 
 .history-item {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    word-break: break-all;
 }
 
 .prompt {
     color: var(--success-color);
-    margin-right: 0.5rem;
+    margin-right: 0.4rem;
 }
 
 .error-message {
     color: var(--error-color);
-    margin: 0.5rem 0;
+    margin: 0.4rem 0;
 }
 
 .command-input-container {
     display: flex;
     align-items: center;
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
 }
 
 .command-input {
@@ -214,7 +281,7 @@ body {
     color: var(--terminal-text);
     font-family: inherit;
     font-size: inherit;
-    padding: 0.25rem;
+    padding: 0.2rem;
     outline: none;
 }
 
@@ -223,11 +290,12 @@ body {
     color: var(--terminal-bg);
     border: none;
     border-radius: 4px;
-    padding: 0.25rem 0.75rem;
-    margin-left: 0.5rem;
+    padding: 0.2rem 0.6rem;
+    margin-left: 0.4rem;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.2s;
+    font-size: 0.8rem;
 }
 
 .execute-button:hover {
@@ -240,18 +308,18 @@ body {
 }
 
 .suggestions {
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .suggestion-item {
     background-color: var(--border-color);
     color: var(--terminal-text);
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.4rem;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -263,45 +331,53 @@ body {
 .explanation-panel {
     background-color: var(--terminal-bg);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.8rem;
     color: var(--terminal-text);
+    flex: 0 0 auto;
 }
 
 .explanation-panel h3 {
     color: var(--accent-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+    font-size: 0.9rem;
 }
 
 .explanation-content {
     white-space: pre-line;
+    font-size: 0.85rem;
+    max-height: 120px;
+    overflow-y: auto;
 }
 
 .command-list {
     background-color: var(--terminal-bg);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0.8rem;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .command-list h3 {
     color: var(--accent-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.3rem;
+    font-size: 0.9rem;
 }
 
 .commands-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.4rem;
 }
 
 .command-item {
     background-color: var(--panel-bg);
     border-radius: 6px;
-    padding: 0.75rem;
+    padding: 0.6rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -314,84 +390,13 @@ body {
 .command-name {
     color: var(--success-color);
     font-weight: bold;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.8rem;
 }
 
 .command-desc {
     color: var(--terminal-text);
-    font-size: 0.8rem;
-}
-
-/* Estilos para visualización de Git */
-.commit-node {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--panel-bg);
-    border: 3px solid;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.commit-node:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
-}
-
-.commit-id {
     font-size: 0.7rem;
-    font-weight: bold;
-}
-
-.head-commit {
-    box-shadow: 0 0 0 4px rgba(189, 147, 249, 0.3);
-}
-
-.highlighted {
-    animation: pulse 1.5s infinite;
-}
-
-.commit-line {
-    position: absolute;
-    height: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: transparent;
-    border-top: 2px solid;
-    z-index: 1;
-}
-
-.merge-line {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border: 2px solid;
-    border-right: none;
-    border-bottom: none;
-    top: 0;
-    left: -50px;
-    border-radius: 10px 0 0 0;
-    z-index: 1;
-}
-
-.branch-label {
-    position: absolute;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--terminal-bg);
-    font-weight: bold;
-    z-index: 5;
-    transition: all 0.3s ease;
-}
-
-.current-branch {
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
 /* Animaciones */
@@ -399,11 +404,9 @@ body {
     0% {
         transform: scale(1);
     }
-
     50% {
         transform: scale(1.15);
     }
-
     100% {
         transform: scale(1);
     }
@@ -415,31 +418,100 @@ body {
         flex-direction: column;
     }
 
-    .visualization-container,
-    .command-container {
-        width: 100%;
+    .visualization-container {
+        flex: none;
+        height: 50vh;
     }
 
     .command-container {
+        flex: none;
+        max-width: 100%;
+        height: calc(50vh - 81px); /* Compensar header */
         border-left: none;
         border-top: 1px solid var(--border-color);
+    }
+    
+    .terminal-content {
+        max-height: 120px;
+    }
+    
+    .explanation-content {
+        max-height: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .description {
+        font-size: 0.8rem;
+    }
+    
+    .git-graph {
+        margin: 0.5rem;
+        min-height: 250px;
+    }
+    
+    .repo-state {
+        margin: 0 0.5rem 0.5rem 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    .command-container {
+        padding: 0.5rem;
+    }
+    
+    .commands-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        padding: 0.5rem;
+    }
+    
+    .app-header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .description {
+        font-size: 0.7rem;
+    }
+    
+    .command-container {
+        gap: 0.5rem;
+    }
+    
+    .commands-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .repo-state {
+        flex-direction: column;
+    }
+    
+    .state-section {
+        min-width: 100%;
     }
 }
 
 /* Estilos para la barra de desplazamiento */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
     background: var(--panel-bg);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--border-color);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

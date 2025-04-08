@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as d3 from 'd3';
 import './GitVisualizer.css';
 
 // Tipos para nuestras estructuras de datos
@@ -6,12 +7,16 @@ type CommitNode = {
   id: string;
   message: string;
   branch: string;
-  x: number;
-  y: number;
   parent?: string;
+  secondParent?: string;
   highlighted?: boolean;
   isHead?: boolean;
   isLatest?: boolean;
+  // D3 utilizará estas propiedades para posicionamiento
+  x?: number;
+  y?: number;
+  fx?: number | null;
+  fy?: number | null;
 };
 
 type Branch = {
@@ -28,6 +33,19 @@ type GitState = {
   workingDirectory: string[];
 };
 
+// Nodo del grafo D3
+interface D3Node extends d3.SimulationNodeDatum {
+  id: string;
+  commit: CommitNode;
+}
+
+// Enlace del grafo D3
+interface D3Link extends d3.SimulationLinkDatum<D3Node> {
+  source: string | D3Node;
+  target: string | D3Node;
+  isMerge?: boolean;
+}
+
 // Componente para la visualización de Git
 const GitVisualizer: React.FC = () => {
   const [command, setCommand] = useState<string>('');
@@ -35,12 +53,14 @@ const GitVisualizer: React.FC = () => {
   const [explanation, setExplanation] = useState<string>('');
   const [animating, setAnimating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const canvasRef = useRef<HTMLDivElement>(null);
-
+  
+  const graphRef = useRef<SVGSVGElement>(null);
+  const simulationRef = useRef<d3.Simulation<D3Node, D3Link> | null>(null);
+  
   // Estado inicial de Git
   const [gitState, setGitState] = useState<GitState>({
     commits: [
-      { id: 'c1', message: 'Initial commit', branch: 'main', x: 50, y: 100, isHead: true, isLatest: true }
+      { id: 'c1', message: 'Initial commit', branch: 'main', isHead: true, isLatest: true }
     ],
     branches: [
       { name: 'main', color: '#2ecc71', head: 'c1' }
@@ -63,16 +83,253 @@ const GitVisualizer: React.FC = () => {
     { name: 'git status', desc: 'Muestra el estado del repositorio' }
   ];
 
-  // Efecto para animar y renderizar cambios
+  // Dimensiones del SVG y configuración del grafo
+  const updateGraphDimensions = () => {
+    if (!graphRef.current) return { width: 600, height: 400 };
+    
+    const container = graphRef.current.parentElement;
+    if (!container) return { width: 600, height: 400 };
+    
+    return {
+      width: container.clientWidth,
+      height: container.clientHeight
+    };
+  };
+
+  // Efecto para crear y actualizar el grafo D3
   useEffect(() => {
-    drawGitGraph();
+    if (!graphRef.current) return;
+    
+    // Limpiar SVG anterior
+    d3.select(graphRef.current).selectAll("*").remove();
+    
+    const { width, height } = updateGraphDimensions();
+    
+    // Crear nodos y enlaces para D3
+    const nodes: D3Node[] = gitState.commits.map(commit => ({
+      id: commit.id,
+      commit,
+      x: commit.x,
+      y: commit.y
+    }));
+    
+    const links: D3Link[] = [];
+    
+    // Crear enlaces entre commits
+    gitState.commits.forEach(commit => {
+      if (commit.parent) {
+        links.push({
+          source: commit.id,
+          target: commit.parent
+        });
+      }
+      
+      if (commit.secondParent) {
+        links.push({
+          source: commit.id,
+          target: commit.secondParent,
+          isMerge: true
+        });
+      }
+    });
+    
+    // Configuración de la simulación de fuerzas D3
+    const simulation = d3.forceSimulation<D3Node, D3Link>(nodes)
+      .force("link", d3.forceLink<D3Node, D3Link>(links)
+        .id(d => d.id)
+        .distance(100)
+        .strength(0.7))
+      .force("charge", d3.forceManyBody().strength(-500))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("x", d3.forceX(width / 2).strength(0.1))
+      .force("y", d3.forceY(height / 2).strength(0.1));
+    
+    // Crear elementos SVG
+    const svg = d3.select(graphRef.current)
+      .attr("viewBox", [0, 0, width, height])
+      .attr("width", width)
+      .attr("height", height);
+    
+    // Crear contenedor con zoom
+    const g = svg.append("g");
+    
+    // Añadir zoom
+    svg.call(
+      d3.zoom<SVGSVGElement, unknown>()
+        .extent([[0, 0], [width, height]])
+        .scaleExtent([0.5, 3])
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        })
+    );
+
+    // Crear enlaces (líneas)
+    const link = g.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(links)
+      .enter()
+      .append("path")
+      .attr("class", d => d.isMerge ? "link merge-link" : "link")
+      .attr("stroke", d => {
+        const targetCommit = gitState.commits.find(c => c.id === (typeof d.target === 'string' ? d.target : d.target.id));
+        if (!targetCommit) return "#333";
+        return gitState.branches.find(b => b.name === targetCommit.branch)?.color || "#333";
+      })
+      .attr("stroke-width", 2)
+      .attr("fill", "none");
+    
+    // Crear nodos (commits)
+    const node = g.append("g")
+      .attr("class", "nodes")
+      .selectAll("g")
+      .data(nodes)
+      .enter()
+      .append("g")
+      .attr("class", "node-group")
+      .call(d3.drag<SVGGElement, D3Node>()
+        .on("start", dragStarted)
+        .on("drag", dragged)
+        .on("end", dragEnded));
+    
+    // Añadir círculos para cada commit
+    node.append("circle")
+      .attr("class", d => `commit-node ${d.commit.isHead ? "head-commit" : ""} ${d.commit.highlighted ? "highlighted" : ""}`)
+      .attr("r", 20)
+      .attr("stroke", d => {
+        return gitState.branches.find(b => b.name === d.commit.branch)?.color || "#333";
+      })
+      .attr("stroke-width", 3);
+    
+    // Añadir texto para el ID del commit
+    node.append("text")
+      .attr("class", "commit-id")
+      .attr("dy", "0.35em")
+      .attr("text-anchor", "middle")
+      .text(d => d.commit.id);
+    
+    // Añadir tooltip con mensaje al hacer hover
+    node.append("title")
+      .text(d => `${d.commit.id}: ${d.commit.message}`);
+    
+    // Añadir etiquetas de rama
+    const branchLabels = g.append("g")
+      .attr("class", "branch-labels")
+      .selectAll("g")
+      .data(gitState.branches)
+      .enter()
+      .append("g")
+      .attr("class", "branch-group");
+    
+    branchLabels.append("rect")
+      .attr("class", d => `branch-label ${d.name === gitState.currentBranch ? "current-branch" : ""}`)
+      .attr("rx", 4)
+      .attr("ry", 4)
+      .attr("fill", d => d.color)
+      .attr("height", 22);
+    
+    branchLabels.append("text")
+      .attr("class", "branch-name")
+      .attr("dy", "0.85em")
+      .attr("dx", "8")
+      .attr("fill", "#000")
+      .attr("text-anchor", "start")
+      .text(d => d.name);
+    
+    // Calcular ancho de cada etiqueta
+    branchLabels.each(function() {
+      const text = d3.select(this).select("text");
+      const textNode = text.node() as SVGTextElement;
+      const textWidth = textNode?.getComputedTextLength() || 0;
+      d3.select(this).select("rect").attr("width", textWidth + 16);
+    });
+        
+    // Actualizar posiciones en cada tick de la simulación
+    simulation.on("tick", () => {
+      // Actualizar posición de enlaces
+      link.attr("d", d => {
+        const source = typeof d.source === 'string' ? nodes.find(n => n.id === d.source) : d.source;
+        const target = typeof d.target === 'string' ? nodes.find(n => n.id === d.target) : d.target;
+        
+        if (!source || !target || !source.x || !source.y || !target.x || !target.y) return "";
+        
+        if (d.isMerge) {
+          // Curva para enlaces de merge
+          const midX = (source.x + target.x) / 2;
+          const midY = source.y - 50;
+          return `M${source.x},${source.y} Q${midX},${midY} ${target.x},${target.y}`;
+        } else {
+          // Línea recta para enlaces normales
+          return `M${source.x},${source.y} L${target.x},${target.y}`;
+        }
+      });
+      
+      // Actualizar posición de nodos
+      node.attr("transform", d => `translate(${d.x},${d.y})`);
+      
+      // Actualizar posición de etiquetas de rama
+      branchLabels.attr("transform", d => {
+        const headCommit = nodes.find(n => n.id === d.head);
+        if (!headCommit || !headCommit.x || !headCommit.y) return "";
+        return `translate(${headCommit.x + 30},${headCommit.y - 30})`;
+      });
+    });
+    
+    // Funciones de arrastre
+    function dragStarted(event: d3.D3DragEvent<SVGGElement, D3Node, D3Node>) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = event.subject.x;
+      event.subject.fy = event.subject.y;
+    }
+    
+    function dragged(event: d3.D3DragEvent<SVGGElement, D3Node, D3Node>) {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    }
+    
+    function dragEnded(event: d3.D3DragEvent<SVGGElement, D3Node, D3Node>) {
+      if (!event.active) simulation.alphaTarget(0);
+      
+      // Opcional: desactivar para permitir nodos fijos
+      // event.subject.fx = null;
+      // event.subject.fy = null;
+    }
+    
+    // Referencia a la simulación
+    simulationRef.current = simulation;
+    
+    // Iniciar simulación con transición suave
+    simulation.alpha(1).restart();
+    
+    // Limpieza
+    return () => {
+      simulation.stop();
+    };
   }, [gitState]);
 
-  // Función para dibujar el grafo de Git
-  const drawGitGraph = () => {
-    if (!canvasRef.current) return;
-    // La renderización real ocurre a través de CSS y elementos DOM
-  };
+  // Ajuste automático del tamaño del gráfico al cambiar el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      if (!graphRef.current || !simulationRef.current) return;
+      
+      const { width, height } = updateGraphDimensions();
+      
+      d3.select(graphRef.current)
+        .attr("viewBox", [0, 0, width, height])
+        .attr("width", width)
+        .attr("height", height);
+      
+      simulationRef.current
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("x", d3.forceX(width / 2).strength(0.1))
+        .force("y", d3.forceY(height / 2).strength(0.1))
+        .alpha(0.3)
+        .restart();
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Manejador del comando ingresado
   const handleCommand = () => {
@@ -154,7 +411,7 @@ const GitVisualizer: React.FC = () => {
     // Reiniciar el estado Git
     setGitState({
       commits: [
-        { id: 'c1', message: 'Initial commit', branch: 'main', x: 50, y: 100, isHead: true, isLatest: true }
+        { id: 'c1', message: 'Initial commit', branch: 'main', isHead: true, isLatest: true }
       ],
       branches: [
         { name: 'main', color: '#2ecc71', head: 'c1' }
@@ -225,8 +482,6 @@ const GitVisualizer: React.FC = () => {
       id: newCommitId,
       message,
       branch,
-      x: lastCommit.x + 100,
-      y: lastCommit.y,
       parent: lastCommit.id,
       isHead: true,
       isLatest: true
@@ -426,8 +681,6 @@ const GitVisualizer: React.FC = () => {
       id: mergeCommitId,
       message: `Merge ${sourceBranchName} into ${targetBranchName}`,
       branch: targetBranchName,
-      x: targetCommit.x + 100,
-      y: targetCommit.y,
       parent: targetCommit.id,
       secondParent: sourceCommit.id,
       isHead: true,
@@ -490,8 +743,6 @@ const GitVisualizer: React.FC = () => {
       id: rebaseCommitId,
       message: `${currentCommit.message} (rebased)`,
       branch: currentBranchName,
-      x: baseCommit.x + 100,
-      y: baseCommit.y,
       parent: baseCommit.id,
       isHead: true,
       isLatest: true
@@ -610,63 +861,10 @@ const GitVisualizer: React.FC = () => {
       
       <div className="content-container">
         <div className="visualization-container">
-          <div className="git-graph" ref={canvasRef}>
-            {/* Renderizar commits */}
-            {gitState.commits.map(commit => (
-              <div 
-                key={commit.id} 
-                className={`commit-node ${commit.isHead ? 'head-commit' : ''} ${commit.highlighted ? 'highlighted' : ''}`}
-                style={{
-                  left: `${commit.x}px`,
-                  top: `${commit.y}px`,
-                  borderColor: gitState.branches.find(b => b.name === commit.branch)?.color || '#333'
-                }}
-                title={`${commit.id}: ${commit.message}`}
-              >
-                <div className="commit-id">{commit.id}</div>
-                
-                {/* Líneas entre commits */}
-                {commit.parent && (
-                  <div className="commit-line" style={{
-                    width: '100px',
-                    left: '-100px',
-                    borderColor: gitState.branches.find(b => b.name === commit.branch)?.color || '#333'
-                  }}></div>
-                )}
-                
-                {/* Líneas de merge */}
-                {commit.secondParent && (
-                  <div className="merge-line" style={{
-                    borderColor: gitState.branches.find(b => 
-                      b.head === commit.secondParent
-                    )?.color || '#333'
-                  }}></div>
-                )}
-              </div>
-            ))}
-            
-            {/* Etiquetas de ramas */}
-            {gitState.branches.map(branch => {
-              const headCommit = gitState.commits.find(c => c.id === branch.head);
-              if (!headCommit) return null;
-              
-              return (
-                <div 
-                  key={branch.name}
-                  className={`branch-label ${branch.name === gitState.currentBranch ? 'current-branch' : ''}`}
-                  style={{
-                    left: `${headCommit.x + 20}px`,
-                    top: `${headCommit.y - 25}px`,
-                    backgroundColor: branch.color
-                  }}
-                >
-                  {branch.name}
-                </div>
-              );
-            })}
+          <div className="git-graph">
+            <svg ref={graphRef} className="git-svg"></svg>
           </div>
           
-          {/* Estado del repositorio */}
           <div className="repo-state">
             <div className="state-section">
               <h3>Rama actual: <span className="branch-name">{gitState.currentBranch}</span></h3>
