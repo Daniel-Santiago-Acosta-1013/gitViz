@@ -1,0 +1,447 @@
+/* GitVisualizer.css */
+:root {
+    --background-color: #1e1e2e;
+    --terminal-bg: #282a36;
+    --terminal-text: #f8f8f2;
+    --accent-color: #bd93f9;
+    --secondary-color: #ff79c6;
+    --success-color: #50fa7b;
+    --warning-color: #f1fa8c;
+    --error-color: #ff5555;
+    --text-color: #f8f8f2;
+    --border-color: #44475a;
+    --panel-bg: #2d2d40;
+    --branch-color: #8be9fd;
+    --commit-color: #f1fa8c;
+    --hover-color: #44475a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Fira Code', monospace;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.git-visualizer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.app-header {
+    padding: 1rem 2rem;
+    background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.app-header h1 {
+    color: var(--accent-color);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.description {
+    color: var(--secondary-color);
+    font-size: 1rem;
+}
+
+.content-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.visualization-container {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--background-color);
+}
+
+.git-graph {
+    flex: 1;
+    position: relative;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--panel-bg);
+    overflow: auto;
+    min-height: 400px;
+}
+
+.repo-state {
+    margin-top: 1rem;
+    background-color: var(--panel-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.state-section {
+    flex: 1;
+    min-width: 250px;
+}
+
+.state-section h3 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.branch-name {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.state-content {
+    color: var(--terminal-text);
+    background-color: var(--terminal-bg);
+    padding: 0.75rem;
+    border-radius: 4px;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.state-content ul {
+    list-style-type: none;
+}
+
+.state-content li {
+    padding: 0.25rem 0;
+}
+
+.command-container {
+    width: 450px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: var(--panel-bg);
+    border-left: 1px solid var(--border-color);
+    overflow-y: auto;
+}
+
+.terminal {
+    background-color: var(--terminal-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.terminal-header {
+    background-color: var(--border-color);
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.terminal-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.terminal-button.red {
+    background-color: var(--error-color);
+}
+
+.terminal-button.yellow {
+    background-color: var(--warning-color);
+}
+
+.terminal-button.green {
+    background-color: var(--success-color);
+}
+
+.terminal-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-color);
+    font-size: 0.8rem;
+}
+
+.terminal-content {
+    padding: 1rem;
+    color: var(--terminal-text);
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.history-item {
+    margin-bottom: 0.5rem;
+}
+
+.prompt {
+    color: var(--success-color);
+    margin-right: 0.5rem;
+}
+
+.error-message {
+    color: var(--error-color);
+    margin: 0.5rem 0;
+}
+
+.command-input-container {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.command-input {
+    flex: 1;
+    background-color: transparent;
+    border: none;
+    color: var(--terminal-text);
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0.25rem;
+    outline: none;
+}
+
+.execute-button {
+    background-color: var(--accent-color);
+    color: var(--terminal-bg);
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem 0.75rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.execute-button:hover {
+    background-color: var(--secondary-color);
+}
+
+.execute-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.suggestions {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.suggestion-item {
+    background-color: var(--border-color);
+    color: var(--terminal-text);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.suggestion-item:hover {
+    background-color: var(--hover-color);
+}
+
+.explanation-panel {
+    background-color: var(--terminal-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--terminal-text);
+}
+
+.explanation-panel h3 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.explanation-content {
+    white-space: pre-line;
+}
+
+.command-list {
+    background-color: var(--terminal-bg);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.command-list h3 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.command-item {
+    background-color: var(--panel-bg);
+    border-radius: 6px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.command-item:hover {
+    background-color: var(--hover-color);
+    transform: translateY(-2px);
+}
+
+.command-name {
+    color: var(--success-color);
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.command-desc {
+    color: var(--terminal-text);
+    font-size: 0.8rem;
+}
+
+/* Estilos para visualización de Git */
+.commit-node {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--panel-bg);
+    border: 3px solid;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.commit-node:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+}
+
+.commit-id {
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.head-commit {
+    box-shadow: 0 0 0 4px rgba(189, 147, 249, 0.3);
+}
+
+.highlighted {
+    animation: pulse 1.5s infinite;
+}
+
+.commit-line {
+    position: absolute;
+    height: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border-top: 2px solid;
+    z-index: 1;
+}
+
+.merge-line {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 2px solid;
+    border-right: none;
+    border-bottom: none;
+    top: 0;
+    left: -50px;
+    border-radius: 10px 0 0 0;
+    z-index: 1;
+}
+
+.branch-label {
+    position: absolute;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--terminal-bg);
+    font-weight: bold;
+    z-index: 5;
+    transition: all 0.3s ease;
+}
+
+.current-branch {
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .content-container {
+        flex-direction: column;
+    }
+
+    .visualization-container,
+    .command-container {
+        width: 100%;
+    }
+
+    .command-container {
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+}
+
+/* Estilos para la barra de desplazamiento */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--panel-bg);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
