@@ -2,12 +2,12 @@ import React from 'react';
 import GitVisualizer from './components/GitVisualizer/GitVisualizer';
 import './App.css';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <div className="app">
+    <div className="App">
       <GitVisualizer />
     </div>
   );
-};
+}
 
 export default App;
