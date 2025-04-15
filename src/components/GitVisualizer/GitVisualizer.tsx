@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GitState, CommandDefinition } from '../../types/git';
+import { GitState, CommandDefinition, CommandOptionDefinition, CommandArgumentDefinition } from '../../types/git';
 import GitGraph from '../GitGraph/GitGraph';
 import CommandTerminal from '../CommandTerminal/CommandTerminal';
 import CommandList from '../CommandList/CommandList';
@@ -27,25 +27,168 @@ const GitVisualizer: React.FC = () => {
     workingDirectory: []
   });
 
-  // Comandos soportados
+  // Definir opciones comunes para los comandos
+  const commitOptions: CommandOptionDefinition[] = [
+    { option: '-m', desc: 'Añadir mensaje de commit', requiresValue: true, valueDesc: 'mensaje' },
+    { option: '--message', desc: 'Añadir mensaje de commit', requiresValue: true, valueDesc: 'mensaje' },
+    { option: '--amend', desc: 'Modificar el commit anterior en lugar de crear uno nuevo' }
+  ];
+
+  const branchOptions: CommandOptionDefinition[] = [
+    { option: '-d', desc: 'Eliminar una rama', requiresValue: true, valueDesc: 'nombre-rama' },
+    { option: '-D', desc: 'Forzar eliminación de una rama', requiresValue: true, valueDesc: 'nombre-rama' },
+    { option: '-a', desc: 'Listar todas las ramas (locales y remotas)' },
+    { option: '-r', desc: 'Listar ramas remotas' }
+  ];
+
+  const checkoutOptions: CommandOptionDefinition[] = [
+    { option: '-b', desc: 'Crear y cambiar a una nueva rama', requiresValue: true, valueDesc: 'nombre-rama' },
+    { option: '-B', desc: 'Crear o resetear una rama y cambiar a ella', requiresValue: true, valueDesc: 'nombre-rama' }
+  ];
+
+  const resetOptions: CommandOptionDefinition[] = [
+    { option: '--soft', desc: 'Mantener cambios en el área de preparación' },
+    { option: '--hard', desc: 'Descartar todos los cambios locales' },
+    { option: '--mixed', desc: 'Deshacer cambios en el área de preparación (defecto)' }
+  ];
+
+  // Definir argumentos comunes
+  const fileArguments: CommandArgumentDefinition[] = [
+    { name: 'archivo', desc: 'Archivo para añadir', optional: true, examples: ['archivo.txt', 'carpeta/archivo.js', '.'] }
+  ];
+
+  const branchArguments: CommandArgumentDefinition[] = [
+    { name: 'nombre-rama', desc: 'Nombre de la rama', optional: true, examples: ['feature/nueva-funcion', 'hotfix/bug-123', 'develop'] }
+  ];
+
+  const commitArguments: CommandArgumentDefinition[] = [
+    { name: 'commit-hash', desc: 'Hash del commit', optional: true, examples: ['c1', 'c2', 'c3'] }
+  ];
+
+  // Comandos soportados con sus opciones y argumentos
   const supportedCommands: CommandDefinition[] = [
-    { name: 'git init', desc: 'Inicializa un nuevo repositorio Git' },
-    { name: 'git add', desc: 'Añade cambios al área de preparación' },
-    { name: 'git commit', desc: 'Guarda los cambios en el repositorio' },
-    { name: 'git branch', desc: 'Crea o lista ramas' },
-    { name: 'git checkout', desc: 'Cambia entre ramas o commits' },
-    { name: 'git merge', desc: 'Combina cambios de una rama a otra' },
-    { name: 'git rebase', desc: 'Reorganiza commits para una historia lineal' },
-    { name: 'git reset', desc: 'Deshace cambios o commits' },
-    { name: 'git status', desc: 'Muestra el estado del repositorio' },
-    { name: 'git log', desc: 'Muestra el historial de commits' },
-    { name: 'git diff', desc: 'Muestra diferencias entre commits' },
-    { name: 'git fetch', desc: 'Descarga objetos y referencias de otro repositorio' },
-    { name: 'git pull', desc: 'Incorpora cambios de un repositorio remoto' },
-    { name: 'git push', desc: 'Actualiza referencias remotas' },
-    { name: 'git stash', desc: 'Guarda cambios locales en un área temporal' },
-    { name: 'git tag', desc: 'Crea, lista o elimina tags de referencia' },
-    { name: 'git cherry-pick', desc: 'Aplica los cambios de commits específicos' }
+    { 
+      name: 'git init', 
+      desc: 'Inicializa un nuevo repositorio Git'
+    },
+    { 
+      name: 'git add', 
+      desc: 'Añade cambios al área de preparación',
+      arguments: fileArguments,
+      options: [
+        { option: '-A', desc: 'Añadir todos los archivos' },
+        { option: '--all', desc: 'Añadir todos los archivos' }
+      ]
+    },
+    { 
+      name: 'git commit', 
+      desc: 'Guarda los cambios en el repositorio',
+      options: commitOptions
+    },
+    { 
+      name: 'git branch', 
+      desc: 'Crea o lista ramas',
+      options: branchOptions,
+      arguments: branchArguments
+    },
+    { 
+      name: 'git checkout', 
+      desc: 'Cambia entre ramas o commits',
+      options: checkoutOptions,
+      arguments: [
+        ...branchArguments,
+        ...commitArguments
+      ]
+    },
+    { 
+      name: 'git merge', 
+      desc: 'Combina cambios de una rama a otra',
+      arguments: branchArguments,
+      options: [
+        { option: '--no-ff', desc: 'Crear siempre un commit de merge' }
+      ]
+    },
+    { 
+      name: 'git rebase', 
+      desc: 'Reorganiza commits para una historia lineal',
+      arguments: branchArguments,
+      options: [
+        { option: '-i', desc: 'Modo interactivo', requiresValue: true, valueDesc: 'commit-base' },
+        { option: '--continue', desc: 'Continuar rebase después de resolver conflictos' },
+        { option: '--abort', desc: 'Abortar rebase en curso' }
+      ]
+    },
+    { 
+      name: 'git reset', 
+      desc: 'Deshace cambios o commits',
+      arguments: commitArguments,
+      options: resetOptions
+    },
+    { 
+      name: 'git status', 
+      desc: 'Muestra el estado del repositorio',
+      options: [
+        { option: '-s', desc: 'Formato corto' },
+        { option: '--short', desc: 'Formato corto' }
+      ]
+    },
+    { 
+      name: 'git log', 
+      desc: 'Muestra el historial de commits',
+      options: [
+        { option: '--oneline', desc: 'Mostrar cada commit en una línea' },
+        { option: '--graph', desc: 'Mostrar gráfico ASCII de la historia' }
+      ]
+    },
+    { 
+      name: 'git diff', 
+      desc: 'Muestra diferencias entre commits',
+      arguments: [
+        { name: 'commit1', desc: 'Primer commit para comparar', optional: true, examples: ['c1', 'c2'] },
+        { name: 'commit2', desc: 'Segundo commit para comparar', optional: true, examples: ['c2', 'c3'] }
+      ]
+    },
+    { 
+      name: 'git fetch', 
+      desc: 'Descarga objetos y referencias de otro repositorio'
+    },
+    { 
+      name: 'git pull', 
+      desc: 'Incorpora cambios de un repositorio remoto',
+      options: [
+        { option: '--rebase', desc: 'Realizar rebase en lugar de merge' }
+      ]
+    },
+    { 
+      name: 'git push', 
+      desc: 'Actualiza referencias remotas',
+      options: [
+        { option: '-f', desc: 'Forzar actualización' },
+        { option: '--force', desc: 'Forzar actualización' }
+      ]
+    },
+    { 
+      name: 'git stash', 
+      desc: 'Guarda cambios locales en un área temporal',
+      options: [
+        { option: 'save', desc: 'Guardar cambios con un mensaje', requiresValue: true, valueDesc: 'mensaje' },
+        { option: 'pop', desc: 'Aplicar y eliminar el último stash' },
+        { option: 'apply', desc: 'Aplicar sin eliminar el stash' }
+      ]
+    },
+    { 
+      name: 'git tag', 
+      desc: 'Crea, lista o elimina tags de referencia',
+      options: [
+        { option: '-a', desc: 'Crear tag anotado', requiresValue: true, valueDesc: 'nombre-tag' },
+        { option: '-d', desc: 'Eliminar tag', requiresValue: true, valueDesc: 'nombre-tag' }
+      ]
+    },
+    { 
+      name: 'git cherry-pick', 
+      desc: 'Aplica los cambios de commits específicos',
+      arguments: commitArguments
+    }
   ];
 
   const handleCommand = () => {
@@ -722,14 +865,9 @@ const GitVisualizer: React.FC = () => {
     setExplanation(`${branchStatus}${changes}`);
   };
 
-  const getCommandSuggestions = () => {
-    const commandNames = supportedCommands.map(cmd => cmd.name);
-    if (!command) return [];
-    
-    // Filtrar por coincidencia parcial
-    return commandNames.filter(cmd => 
-      cmd.toLowerCase().startsWith(command.toLowerCase())
-    );
+  const getCommandSuggestions = (): string[] => {
+    const suggestions = supportedCommands.map(cmd => cmd.name);
+    return suggestions;
   };
 
   // Actualizar sugerencias cuando cambia el comando
@@ -783,19 +921,18 @@ const GitVisualizer: React.FC = () => {
 
   return (
     <div className="git-visualizer">
-      <div className="app-header">
+      <header className="app-header">
         <h1>Visualizador de Comandos Git</h1>
-        <div className="description">
+        <p className="description">
           Escribe comandos Git para ver animaciones y entender cómo funcionan.
-        </div>
-      </div>
-      
+        </p>
+      </header>
       <div className="content-container">
         <div className="visualization-container">
           <GitGraph gitState={gitState} />
           <div className="bottom-container">
             <div className="terminal-container">
-              <CommandTerminal
+              <CommandTerminal 
                 command={command}
                 setCommand={setCommand}
                 handleCommand={handleCommand}
@@ -803,11 +940,14 @@ const GitVisualizer: React.FC = () => {
                 error={error}
                 animating={animating}
                 suggestions={suggestions}
+                supportedCommands={supportedCommands}
               />
             </div>
-            
             <div className="command-list-container">
-              <CommandList commands={supportedCommands} setCommand={setCommand} />
+              <CommandList 
+                commands={supportedCommands} 
+                setCommand={setCommand}
+              />
             </div>
           </div>
         </div>

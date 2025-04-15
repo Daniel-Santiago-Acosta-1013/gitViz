@@ -43,7 +43,24 @@ export interface D3Link extends d3.SimulationLinkDatum<D3Node> {
   isMerge?: boolean;
 }
 
+export type CommandOptionDefinition = {
+  option: string;          // Nombre de la opción (ej: -m, --message)
+  desc: string;            // Descripción breve
+  requiresValue?: boolean; // Si requiere un valor después
+  valueDesc?: string;      // Descripción del valor esperado
+};
+
+export type CommandArgumentDefinition = {
+  name: string;            // Nombre del argumento
+  desc: string;            // Descripción breve
+  optional?: boolean;      // Si es opcional
+  examples?: string[];     // Ejemplos del argumento
+};
+
 export type CommandDefinition = {
-  name: string;
-  desc: string;
+  name: string;            // Nombre del comando principal
+  desc: string;            // Descripción breve
+  subcommands?: CommandDefinition[]; // Subcomandos
+  options?: CommandOptionDefinition[]; // Opciones disponibles
+  arguments?: CommandArgumentDefinition[]; // Argumentos posicionales
 }; 

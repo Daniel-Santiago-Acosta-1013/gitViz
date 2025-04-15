@@ -135,6 +135,7 @@
   margin-top: 15px;
   padding: 10px 0;
   border-top: 1px dashed #2f334d;
+  position: relative;
 }
 
 .command-input {
@@ -209,6 +210,7 @@
   cursor: pointer;
   transition: all 0.2s;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .suggestion-item:hover {
@@ -216,6 +218,62 @@
   color: #0c0c16;
   transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo para la sugerencia activa (cuando usamos Tab o flechas) */
+.suggestion-item.active {
+  background-color: #82aaff;
+  color: #0c0c16;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid #c099ff;
+  font-weight: bold;
+}
+
+.suggestion-item.active::before {
+  content: '→';
+  position: absolute;
+  left: -15px;
+  color: #82aaff;
+  font-weight: bold;
+}
+
+/* Estilos para los datos de autocompletado */
+.command-completion-info {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: rgba(30, 30, 46, 0.8);
+  border-radius: 4px;
+  border-left: 3px solid #82aaff;
+  font-size: 12px;
+}
+
+.command-completion-option {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.command-completion-option-name {
+  color: #ffc777;
+  font-weight: bold;
+}
+
+.command-completion-option-desc {
+  color: #c8d3f5;
+  opacity: 0.8;
+  margin-left: 10px;
+}
+
+/* Cursor parpadeante visible cuando se navega por el historial */
+.command-input:focus {
+  caret-color: #91d7e3;
+  animation: blink-caret 1s step-end infinite;
+}
+
+@keyframes blink-caret {
+  from, to { caret-color: #91d7e3; }
+  50% { caret-color: transparent; }
 }
 
 /* Añadir cursor parpadeante al final del prompt cuando está vacío */
@@ -226,11 +284,33 @@
   height: 16px;
   background-color: #91d7e3;
   animation: blink 1s steps(1) infinite;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.command-input-container:focus-within::after {
+  opacity: 0;
+}
+
+.command-input-empty .command-input-container::after {
+  opacity: 1;
 }
 
 @keyframes blink {
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
+}
+
+/* Teclas de atajo en las sugerencias */
+.shortcut-hint {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
 }
 
 /* Responsive styles */
