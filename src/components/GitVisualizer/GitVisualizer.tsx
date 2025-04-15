@@ -1094,13 +1094,13 @@ const GitVisualizer: React.FC = () => {
   const suggestions = getCommandSuggestions();
 
   // Nuevos manejadores para comandos Git adicionales
-  const handleLog = (args: string[]) => {
+  const handleLog = (_args: string[]) => {
     // Simular comando git log
     const logEntries = gitState.commits
       .slice()
       .reverse()
       .map(commit => {
-        const branch = gitState.branches.find(b => b.name === commit.branch);
+        // const branch = gitState.branches.find(b => b.name === commit.branch);
         return `commit ${commit.id}${commit.isHead ? ' (HEAD)' : ''}\nAuthor: Usuario\nDate: ${new Date().toISOString()}\n\n    ${commit.message}\n`;
       })
       .join('\n');
@@ -1108,37 +1108,37 @@ const GitVisualizer: React.FC = () => {
     setExplanation(`Git Log:\n${logEntries}`);
   };
 
-  const handleDiff = (args: string[]) => {
+  const handleDiff = (_args: string[]) => {
     // Simulación simple de git diff
     setExplanation('Comando git diff: Muestra las diferencias entre commits, el directorio de trabajo y el índice.');
   };
 
-  const handleFetch = (args: string[]) => {
+  const handleFetch = (_args: string[]) => {
     // Simulación simple de git fetch
     setExplanation('Comando git fetch: Descarga objetos y referencias de otro repositorio.');
   };
 
-  const handlePull = (args: string[]) => {
+  const handlePull = (_args: string[]) => {
     // Simulación simple de git pull
     setExplanation('Comando git pull: Incorpora cambios de un repositorio remoto en la rama actual.');
   };
 
-  const handlePush = (args: string[]) => {
+  const handlePush = (_args: string[]) => {
     // Simulación simple de git push
     setExplanation('Comando git push: Actualiza referencias remotas junto con objetos asociados.');
   };
 
-  const handleStash = (args: string[]) => {
+  const handleStash = (_args: string[]) => {
     // Simulación simple de git stash
     setExplanation('Comando git stash: Guarda cambios locales en un área temporal.');
   };
 
-  const handleTag = (args: string[]) => {
+  const handleTag = (_args: string[]) => {
     // Simulación simple de git tag
     setExplanation('Comando git tag: Crea, lista o elimina tags de referencia.');
   };
 
-  const handleCherryPick = (args: string[]) => {
+  const handleCherryPick = (_args: string[]) => {
     // Simulación simple de git cherry-pick
     setExplanation('Comando git cherry-pick: Aplica los cambios introducidos por algunos commits existentes.');
   };
