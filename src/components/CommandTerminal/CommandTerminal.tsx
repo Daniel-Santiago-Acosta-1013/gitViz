@@ -5,12 +5,12 @@ import { CommandDefinition } from '../../types/git';
 interface CommandTerminalProps {
   command: string;
   setCommand: (command: string) => void;
-  handleCommand: () => void;
+  handleCommand: (command: string) => void;
   history: string[];
-  error: string;
+  error: string | null;
   animating: boolean;
-  suggestions: string[];
-  supportedCommands: CommandDefinition[];
+  suggestions: CommandDefinition[] | string[] | null;
+  supportedCommands?: CommandDefinition[];
 }
 
 const CommandTerminal: React.FC<CommandTerminalProps> = ({
@@ -20,197 +20,199 @@ const CommandTerminal: React.FC<CommandTerminalProps> = ({
   history,
   error,
   animating,
-  suggestions,
-  supportedCommands
+  supportedCommands = []
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [historyIndex, setHistoryIndex] = useState<number>(-1);
-  const [inputHistory, setInputHistory] = useState<string>(command);
-  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState<number>(-1);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<{
+    text: string; 
+    type: 'command' | 'option' | 'argument';
+    description?: string;
+  }[]>([]);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // Efecto para actualizar las sugerencias filtradas cuando cambian las sugerencias
   useEffect(() => {
-    setFilteredSuggestions(suggestions);
-    setActiveSuggestionIndex(-1);
-  }, [suggestions]);
+    if (contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
+  }, [history, error]);
 
-  // Manejar navegación del historial y autocompletado con Tab
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Navegar por el historial con flechas arriba/abajo
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (historyIndex < history.length - 1) {
-        // Si estamos en la entrada actual, guardémosla
-        if (historyIndex === -1) {
-          setInputHistory(command);
+  // Generate suggestions based on current input
+  const generateSuggestions = (input: string) => {
+    if (!input.trim()) {
+      setFilteredSuggestions([]);
+      return;
+    }
+
+    // Check if this is a git command
+    const parts = input.trim().split(/\s+/);
+    const isGitCommand = parts[0] === 'git';
+
+    // If just "git", suggest all commands
+    if (isGitCommand && parts.length === 1) {
+      const cmdSuggestions = supportedCommands.map(cmd => ({
+        text: cmd.name.split(' ')[1], // Extract just the command part (after "git")
+        type: 'command' as const,
+        description: cmd.desc
+      }));
+      setFilteredSuggestions(cmdSuggestions);
+      return;
+    }
+
+    // If "git" plus something, filter commands or suggest options/arguments
+    if (isGitCommand && parts.length > 1) {
+      const currentPart = parts[parts.length - 1];
+      const isTypingOption = currentPart.startsWith('-');
+      
+      // When typing a subcommand (git ad, git co, etc.)
+      if (parts.length === 2) {
+        // User is typing the command name, show matching commands
+        const cmdSuggestions = supportedCommands
+          .filter(cmd => {
+            const cmdPart = cmd.name.split(' ')[1]; // Get the part after "git"
+            return cmdPart.startsWith(parts[1]);
+          })
+          .map(cmd => ({
+            text: cmd.name.split(' ')[1],
+            type: 'command' as const,
+            description: cmd.desc
+          }));
+        
+        setFilteredSuggestions(cmdSuggestions);
+        return;
+      }
+      
+      // Find the current command for options and arguments
+      const commandName = `git ${parts[1]}`;
+      const currentCommand = supportedCommands.find(cmd => 
+        cmd.name === commandName
+      );
+      
+      if (currentCommand) {
+        // Handle options
+        if (isTypingOption && currentCommand.options) {
+          const optionSuggestions = currentCommand.options
+            .filter(opt => opt.option.startsWith(currentPart))
+            .map(opt => ({
+              text: opt.option,
+              type: 'option' as const,
+              description: opt.desc
+            }));
+          
+          setFilteredSuggestions(optionSuggestions);
+          return;
         }
         
-        const newIndex = historyIndex + 1;
+        // Handle arguments if not typing an option
+        if (!isTypingOption && currentCommand.arguments) {
+          const argSuggestions = currentCommand.arguments
+            .filter(arg => arg.name.startsWith(currentPart) || currentPart === '')
+            .map(arg => ({
+              text: arg.name,
+              type: 'argument' as const,
+              description: arg.desc
+            }));
+          
+          setFilteredSuggestions(argSuggestions);
+          return;
+        }
+      }
+    }
+    
+    // Default handling for non-specific cases
+    setFilteredSuggestions([]);
+  };
+
+  useEffect(() => {
+    // Reset active suggestion index when filtered suggestions change
+    setActiveSuggestionIndex(0);
+    
+    // Generate suggestions when command changes
+    generateSuggestions(command);
+  }, [command, supportedCommands]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Handle arrow up key for history navigation
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (history.length > 0) {
+        const newIndex = historyIndex < history.length - 1 ? historyIndex + 1 : historyIndex;
         setHistoryIndex(newIndex);
         setCommand(history[history.length - 1 - newIndex]);
       }
-    } else if (e.key === 'ArrowDown') {
+    }
+    
+    // Handle arrow down key for history navigation
+    else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (historyIndex > -1) {
+      if (historyIndex > 0) {
         const newIndex = historyIndex - 1;
         setHistoryIndex(newIndex);
-        
-        if (newIndex === -1) {
-          // Volver a la entrada que estaba escribiendo
-          setCommand(inputHistory);
-        } else {
-          setCommand(history[history.length - 1 - newIndex]);
-        }
+        setCommand(history[history.length - 1 - newIndex]);
+      } else if (historyIndex === 0) {
+        setHistoryIndex(-1);
+        setCommand('');
       }
     }
-    // Autocompletado con Tab
+    
+    // Handle Tab key for suggestion selection
     else if (e.key === 'Tab') {
       e.preventDefault();
-      
       if (filteredSuggestions.length > 0) {
-        // Si hay una sugerencia activa, usarla
-        if (activeSuggestionIndex >= 0) {
-          setCommand(filteredSuggestions[activeSuggestionIndex]);
-        } 
-        // De lo contrario, usar la primera sugerencia
-        else {
-          setCommand(filteredSuggestions[0]);
+        const selectedSuggestion = filteredSuggestions[activeSuggestionIndex];
+        
+        // Handle different types of suggestions
+        if (selectedSuggestion) {
+          const parts = command.trim().split(/\s+/);
+          
+          if (parts[0] === 'git' && parts.length === 1) {
+            // Just "git", append the command
+            setCommand(`git ${selectedSuggestion.text} `);
+          } else if (parts[0] === 'git') {
+            // Git command with additional parts
+            const lastPartIndex = command.lastIndexOf(parts[parts.length - 1]);
+            const newCommand = command.substring(0, lastPartIndex) + selectedSuggestion.text + ' ';
+            setCommand(newCommand);
+          }
         }
-      } else {
-        handleTabCompletion();
       }
     }
-    // Navegación a través de sugerencias
-    else if (e.key === 'ArrowRight' && e.altKey) {
+    
+    // Handle navigation between suggestions
+    else if (e.key === 'ArrowRight' && filteredSuggestions.length > 0) {
       e.preventDefault();
-      if (filteredSuggestions.length > 0) {
-        const nextIndex = activeSuggestionIndex < filteredSuggestions.length - 1 
-          ? activeSuggestionIndex + 1 
-          : 0;
-        setActiveSuggestionIndex(nextIndex);
-      }
+      const newIndex = (activeSuggestionIndex + 1) % filteredSuggestions.length;
+      setActiveSuggestionIndex(newIndex);
     }
-    else if (e.key === 'ArrowLeft' && e.altKey) {
+    else if (e.key === 'ArrowLeft' && filteredSuggestions.length > 0) {
       e.preventDefault();
-      if (filteredSuggestions.length > 0) {
-        const prevIndex = activeSuggestionIndex > 0 
-          ? activeSuggestionIndex - 1 
-          : filteredSuggestions.length - 1;
-        setActiveSuggestionIndex(prevIndex);
-      }
-    }
-    // Ejecutar comando con Enter
-    else if (e.key === 'Enter') {
-      setHistoryIndex(-1);
-      handleCommand();
-    }
-    // Resetear el índice de historial para cualquier otra tecla
-    else {
-      setHistoryIndex(-1);
+      const newIndex = (activeSuggestionIndex - 1 + filteredSuggestions.length) % filteredSuggestions.length;
+      setActiveSuggestionIndex(newIndex);
     }
   };
 
-  // Función para manejar el autocompletado con Tab
-  const handleTabCompletion = () => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCommand(e.target.value);
+    setHistoryIndex(-1);
+    generateSuggestions(e.target.value);
+  };
+
+  const handleSuggestionClick = (suggestion: { text: string, type: string }) => {
     const parts = command.trim().split(/\s+/);
     
-    // Si no hay entrada, sugerir 'git'
-    if (command.trim() === '') {
-      setCommand('git ');
-      return;
+    if (parts[0] === 'git' && parts.length === 1) {
+      // Just "git", append the command
+      setCommand(`git ${suggestion.text} `);
+    } else if (parts[0] === 'git') {
+      // Git command with additional parts
+      const lastPartIndex = command.lastIndexOf(parts[parts.length - 1]);
+      const newCommand = command.substring(0, lastPartIndex) + suggestion.text + ' ';
+      setCommand(newCommand);
     }
-
-    // Si solo está 'git', mostrar todos los comandos git
-    if (parts.length === 1 && parts[0] === 'git') {
-      const completions = supportedCommands.map(cmd => {
-        // Extraer el subcomando (git add → add)
-        const subCommand = cmd.name.split(' ')[1];
-        return `git ${subCommand} `;
-      });
-      setFilteredSuggestions(completions);
-      return;
-    }
-
-    // Si es un comando git con un subcomando
-    if (parts.length >= 2 && parts[0] === 'git') {
-      const gitCommand = parts[1];
-      const commandDef = supportedCommands.find(cmd => {
-        const cmdName = cmd.name.split(' ')[1];
-        return cmdName === gitCommand;
-      });
-
-      if (commandDef) {
-        // Completar opciones
-        if (parts.length >= 3 && commandDef.options?.length) {
-          const lastPart = parts[parts.length - 1];
-          
-          // Si el último carácter es un espacio, mostrar todas las opciones
-          if (command.endsWith(' ')) {
-            const optionCompletions = commandDef.options.map(opt => `${opt.option} `);
-            setFilteredSuggestions(optionCompletions);
-            return;
-          }
-          
-          // Si empieza con guión, buscar opciones que coincidan
-          if (lastPart.startsWith('-')) {
-            const matchingOptions = commandDef.options
-              .filter(opt => opt.option.startsWith(lastPart))
-              .map(opt => {
-                // Reemplazar la última parte con la opción completa
-                const newParts = [...parts.slice(0, -1), opt.option];
-                return newParts.join(' ') + ' ';
-              });
-            
-            if (matchingOptions.length > 0) {
-              setFilteredSuggestions(matchingOptions);
-              return;
-            }
-          }
-        }
-        
-        // Completar argumentos
-        if (commandDef.arguments?.length) {
-          // Solo mostrar argumentos si no estamos escribiendo una opción
-          const lastPart = parts[parts.length - 1];
-          if (!lastPart.startsWith('-') || command.endsWith(' ')) {
-            const argumentCompletions = commandDef.arguments
-              .filter(arg => arg.examples && arg.examples.length > 0)
-              .flatMap(arg => arg.examples || [])
-              .map(example => {
-                // Si termina en espacio, agregar el ejemplo
-                if (command.endsWith(' ')) {
-                  return `${command}${example} `;
-                }
-                // Si no, reemplazar la última parte
-                const newParts = [...parts.slice(0, -1), example];
-                return newParts.join(' ') + ' ';
-              });
-            
-            if (argumentCompletions.length > 0) {
-              setFilteredSuggestions(argumentCompletions);
-              return;
-            }
-          }
-        }
-      }
-    }
-  };
-
-  // Filtrar sugerencias mientras el usuario escribe
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const userInput = e.target.value;
-    setCommand(userInput);
     
-    // Resetear el índice de sugerencias activas
-    setActiveSuggestionIndex(-1);
-    
-    // Si hay sugerencias, filtrarlas según la entrada
-    if (suggestions.length > 0) {
-      const filtered = suggestions.filter(
-        suggestion => suggestion.toLowerCase().includes(userInput.toLowerCase())
-      );
-      setFilteredSuggestions(filtered);
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
@@ -222,49 +224,61 @@ const CommandTerminal: React.FC<CommandTerminalProps> = ({
         <div className="terminal-button green"></div>
         <div className="terminal-title">Git Terminal</div>
       </div>
-      <div className="terminal-content">
-        {history.map((cmd, i) => (
-          <div key={i} className="history-item">
-            <span className="prompt">$</span> {cmd}
+      
+      <div className="terminal-content" ref={contentRef}>
+        {history.map((item, index) => (
+          <div key={index} className="history-item">
+            <span className="prompt">$</span>
+            {item}
           </div>
         ))}
         
-        {error && (
-          <div className="error-message">
-            Error: {error}
-          </div>
-        )}
+        {error && <div className="error-message">{error}</div>}
         
         <div className="command-input-container">
           <span className="prompt">$</span>
           <input
             ref={inputRef}
+            className="command-input"
             type="text"
             value={command}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Escribe un comando Git..."
-            className="command-input"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !animating) {
+                handleCommand(command);
+                setHistoryIndex(-1);
+              }
+            }}
             autoFocus
+            disabled={animating}
           />
-          <button 
+          <button
             className="execute-button"
-            onClick={handleCommand}
+            onClick={() => {
+              if (!animating) {
+                handleCommand(command);
+                setHistoryIndex(-1);
+              }
+            }}
             disabled={animating}
           >
-            Ejecutar
+            Run
           </button>
         </div>
         
         {filteredSuggestions.length > 0 && (
           <div className="suggestions">
-            {filteredSuggestions.map((s, i) => (
-              <div 
-                key={i} 
-                className={`suggestion-item ${i === activeSuggestionIndex ? 'active' : ''}`}
-                onClick={() => setCommand(s)}
+            {filteredSuggestions.map((suggestion, index) => (
+              <div
+                key={index}
+                className={`suggestion-item ${index === activeSuggestionIndex ? 'active' : ''}`}
+                onClick={() => handleSuggestionClick(suggestion)}
+                data-type={suggestion.type}
+                data-desc={suggestion.description || ''}
               >
-                {s}
+                {suggestion.text}
+                {index === activeSuggestionIndex && <span className="tab-indicator"></span>}
               </div>
             ))}
           </div>

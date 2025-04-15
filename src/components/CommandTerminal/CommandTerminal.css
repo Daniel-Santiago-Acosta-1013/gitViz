@@ -199,10 +199,29 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: #2f334d #1a1b26;
+}
+
+.suggestions::-webkit-scrollbar {
+  width: 4px;
+}
+
+.suggestions::-webkit-scrollbar-track {
+  background: rgba(30, 30, 46, 0.6);
+  border-radius: 3px;
+}
+
+.suggestions::-webkit-scrollbar-thumb {
+  background-color: #2f334d;
+  border-radius: 3px;
 }
 
 .suggestion-item {
-  background-color: #2f334d;
+  background-color: rgba(47, 51, 77, 0.5);
   color: #c8d3f5;
   padding: 5px 10px;
   border-radius: 6px;
@@ -211,6 +230,10 @@
   transition: all 0.2s;
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
 }
 
 .suggestion-item:hover {
@@ -218,6 +241,7 @@
   color: #0c0c16;
   transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
 /* Estilo para la sugerencia activa (cuando usamos Tab o flechas) */
@@ -228,6 +252,7 @@
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   border: 1px solid #c099ff;
   font-weight: bold;
+  z-index: 5;
 }
 
 .suggestion-item.active::before {
@@ -236,6 +261,52 @@
   left: -15px;
   color: #82aaff;
   font-weight: bold;
+}
+
+/* Resaltar comandos y opciones */
+.suggestion-item[data-type="command"] {
+  background-color: rgba(47, 51, 77, 0.8);
+  border-left: 2px solid #82aaff;
+}
+
+.suggestion-item[data-type="option"] {
+  background-color: rgba(47, 51, 77, 0.6);
+  border-left: 2px solid #ffc777;
+}
+
+.suggestion-item[data-type="argument"] {
+  background-color: rgba(47, 51, 77, 0.4);
+  border-left: 2px solid #91d7e3;
+}
+
+/* Tooltip para mostrar descripciones */
+.suggestion-item::after {
+  content: attr(data-desc);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(12, 12, 22, 0.9);
+  color: #c8d3f5;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  border: 1px solid #2f334d;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  min-width: 150px;
+  text-align: center;
+}
+
+.suggestion-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  bottom: 120%;
 }
 
 /* Estilos para los datos de autocompletado */
@@ -313,6 +384,28 @@
   border-radius: 3px;
 }
 
+/* Flecha indicando Tab para autocompletar */
+.tab-indicator {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: rgba(200, 211, 245, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tab-indicator::before {
+  content: 'Tab';
+  display: inline-block;
+  border: 1px solid rgba(200, 211, 245, 0.2);
+  border-radius: 3px;
+  padding: 1px 3px;
+  font-size: 8px;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .terminal-content {
@@ -327,6 +420,10 @@
   .execute-button {
     padding: 6px 12px;
     font-size: 12px;
+  }
+
+  .suggestions {
+    max-height: 120px;
   }
 }
 
@@ -363,5 +460,11 @@
   
   .prompt {
     margin-right: 8px;
+  }
+
+  .suggestions {
+    max-height: 100px;
+    flex-direction: column;
+    gap: 5px;
   }
 }

@@ -9,7 +9,7 @@ interface CommandListProps {
 
 const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
   const handleCommandClick = (cmdName: string) => {
-    setCommand(cmdName);
+    setCommand(cmdName + ' ');
   };
   
   return (
