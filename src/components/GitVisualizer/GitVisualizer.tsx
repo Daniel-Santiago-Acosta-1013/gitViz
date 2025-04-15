@@ -12,7 +12,7 @@ const GitVisualizer: React.FC = () => {
   const [command, setCommand] = useState<string>('');
   const [history, setHistory] = useState<string[]>([]);
   const [explanation, setExplanation] = useState<string>('');
-  const [animating, setAnimating] = useState<boolean>(false);
+  const [animating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   
