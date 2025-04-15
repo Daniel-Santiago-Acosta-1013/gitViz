@@ -53,3 +53,156 @@
   line-height: 1.6;
   font-size: 15px;
 }
+
+.explanation-tooltip {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 700px;
+  z-index: 1000;
+  background-color: var(--terminal-bg, #1a1b26);
+  color: var(--terminal-text, #c8d3f5);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(130, 170, 255, 0.2);
+  border: 1px solid var(--border-color, #2f334d);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+}
+
+.tooltip-header {
+  background-color: var(--background-color, #0c0c16);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 35px;
+  border-bottom: 1px solid var(--border-color, #2f334d);
+}
+
+.tooltip-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.tooltip-button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0.5;
+}
+
+.tooltip-button.red {
+  background-color: var(--error-color, #ff757f);
+}
+
+.tooltip-button.yellow {
+  background-color: var(--warning-color, #ffc777);
+}
+
+.tooltip-button.green {
+  background-color: var(--success-color, #91d7e3);
+}
+
+.tooltip-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-color, #c8d3f5);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-close {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-color, #c8d3f5);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 5px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.tooltip-close:hover {
+  opacity: 1;
+}
+
+.tooltip-content {
+  padding: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background-color: var(--terminal-bg, #1a1b26);
+  background-image: 
+    linear-gradient(
+      rgba(30, 30, 46, 0.6) 1px, 
+      transparent 1px
+    );
+  background-size: 100% 24px;
+}
+
+.tooltip-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .explanation-tooltip {
+    width: 90%;
+    top: 50px;
+  }
+  
+  .tooltip-content {
+    max-height: 150px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .explanation-tooltip {
+    width: 95%;
+    top: 40px;
+  }
+  
+  .tooltip-title {
+    font-size: 0.8rem;
+  }
+}

@@ -119,7 +119,8 @@ body {
 /* Contenedor para la terminal y la lista de comandos */
 .bottom-container {
   display: flex;
-  min-height: 250px;
+  min-height: 220px;
+  max-height: 320px;
   margin: 12px;
   gap: 12px;
 }
@@ -128,12 +129,16 @@ body {
 .terminal-container {
   flex: 2;
   display: flex;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Lista de comandos a la derecha */
 .command-list-container {
   flex: 1;
   display: flex;
+  height: 100%;
+  overflow: hidden;
 }
 
 .terminal {
@@ -145,6 +150,7 @@ body {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-color);
+  max-height: 100%;
 }
 
 .terminal-header {
@@ -214,6 +220,7 @@ body {
       transparent 1px
     );
   background-size: 100% 24px;
+  max-height: calc(100% - 70px);
 }
 
 .history-item {
@@ -354,6 +361,7 @@ body {
   padding: 15px;
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) var(--terminal-bg);
+  max-height: calc(100% - var(--terminal-header-height));
 }
 
 .command-item {
@@ -406,12 +414,13 @@ body {
 @media (max-width: 1200px) {
   .bottom-container {
     flex-direction: column;
-    min-height: auto;
+    max-height: none;
   }
   
   .terminal-container,
   .command-list-container {
-    min-height: 250px;
+    max-height: 300px;
+    min-height: 200px;
     flex: auto;
   }
 }
@@ -443,6 +452,7 @@ body {
     gap: 10px;
     overflow: visible;
     height: auto;
+    max-height: none;
   }
   
   .git-graph {
@@ -464,6 +474,12 @@ body {
   
   .terminal-content {
     padding: 10px;
+  }
+  
+  .terminal-container,
+  .command-list-container {
+    min-height: 180px;
+    max-height: 250px;
   }
 }
 
@@ -513,8 +529,8 @@ body {
   
   .terminal-container,
   .command-list-container {
-    min-height: auto;
-    max-height: none;
+    min-height: 150px;
+    max-height: 200px;
   }
   
   .terminal,

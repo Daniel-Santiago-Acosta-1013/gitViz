@@ -3,6 +3,7 @@ import { GitState, CommandDefinition, CommandOptionDefinition, CommandArgumentDe
 import GitGraph from '../GitGraph/GitGraph';
 import CommandTerminal from '../CommandTerminal/CommandTerminal';
 import CommandList from '../CommandList/CommandList';
+import ExplanationPanel from '../ExplanationPanel/ExplanationPanel';
 import './GitVisualizer.css';
 
 // Componente para la visualización de Git
@@ -942,7 +943,6 @@ const GitVisualizer: React.FC = () => {
                 suggestions={suggestions}
                 supportedCommands={supportedCommands}
               />
-              {explanation && <div className="command-explanation">{explanation}</div>}
             </div>
             <div className="command-list-container">
               <CommandList 
@@ -953,6 +953,11 @@ const GitVisualizer: React.FC = () => {
           </div>
         </div>
       </div>
+      <ExplanationPanel
+        explanation={explanation}
+        onClose={() => setExplanation('')}
+        autoHideDelay={10000}
+      />
     </div>
   );
 };
