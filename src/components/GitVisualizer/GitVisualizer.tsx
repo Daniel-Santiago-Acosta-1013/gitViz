@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GitState, CommandDefinition } from '../../types/git';
 import GitGraph from '../GitGraph/GitGraph';
-import RepoState from '../RepoState/RepoState';
 import CommandTerminal from '../CommandTerminal/CommandTerminal';
-import ExplanationPanel from '../ExplanationPanel/ExplanationPanel';
 import CommandList from '../CommandList/CommandList';
 import './GitVisualizer.css';
 
@@ -793,27 +791,25 @@ const GitVisualizer: React.FC = () => {
       </div>
       
       <div className="content-container">
-        <div className="command-list-container">
-          <CommandList commands={supportedCommands} setCommand={setCommand} />
-        </div>
-        
         <div className="visualization-container">
           <GitGraph gitState={gitState} />
-          <RepoState gitState={gitState} />
-        </div>
-        
-        <div className="terminal-container">
-          <CommandTerminal
-            command={command}
-            setCommand={setCommand}
-            handleCommand={handleCommand}
-            history={history}
-            error={error}
-            animating={animating}
-            suggestions={suggestions}
-          />
-          
-          <ExplanationPanel explanation={explanation} />
+          <div className="bottom-container">
+            <div className="terminal-container">
+              <CommandTerminal
+                command={command}
+                setCommand={setCommand}
+                handleCommand={handleCommand}
+                history={history}
+                error={error}
+                animating={animating}
+                suggestions={suggestions}
+              />
+            </div>
+            
+            <div className="command-list-container">
+              <CommandList commands={supportedCommands} setCommand={setCommand} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
