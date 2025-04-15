@@ -8,6 +8,10 @@ interface CommandListProps {
 }
 
 const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
+  const handleCommandClick = (cmdName: string) => {
+    setCommand(cmdName);
+  };
+  
   return (
     <div className="command-list">
       <h3>Comandos Soportados</h3>
@@ -16,7 +20,8 @@ const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
           <div 
             key={i} 
             className="command-item"
-            onClick={() => setCommand(cmd.name)}
+            onClick={() => handleCommandClick(cmd.name)}
+            aria-label={`Ejecutar: ${cmd.name}`}
           >
             <div className="command-name">{cmd.name}</div>
             <div className="command-desc">{cmd.desc}</div>
@@ -27,4 +32,4 @@ const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
   );
 };
 
-export default CommandList; 
+export default CommandList;
