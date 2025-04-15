@@ -748,7 +748,6 @@ const GitVisualizer: React.FC = () => {
 
   const handleLog = (_args: string[]) => {
     // Simulación simple de git log
-    // const branch = gitState.branches.find(b => b.name === commit.branch);
     setExplanation('Comando git log: Muestra el historial de commits.');
   };
 
@@ -797,12 +796,16 @@ const GitVisualizer: React.FC = () => {
       </div>
       
       <div className="content-container">
+        <div className="command-list-container">
+          <CommandList commands={supportedCommands} setCommand={setCommand} />
+        </div>
+        
         <div className="visualization-container">
           <GitGraph gitState={gitState} />
           <RepoState gitState={gitState} />
         </div>
         
-        <div className="command-container">
+        <div className="terminal-container">
           <CommandTerminal
             command={command}
             setCommand={setCommand}
@@ -814,8 +817,6 @@ const GitVisualizer: React.FC = () => {
           />
           
           <ExplanationPanel explanation={explanation} />
-          
-          <CommandList commands={supportedCommands} setCommand={setCommand} />
         </div>
       </div>
     </div>
