@@ -6,8 +6,8 @@
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  background: #ffffff;
-  border: 1px solid #eaeaea;
+  background: #1e1e2e;
+  border: 1px solid #414868;
   transition: all 0.3s ease;
 }
 
@@ -18,33 +18,34 @@
 .git-svg {
   width: 100%;
   height: 100%;
-  background-color: #f8fafc;
+  background-color: #1e1e2e;
   transition: background-color 0.3s ease;
 }
 
 /* Estilos para los enlaces entre nodos */
-.link {
+.links path {
   stroke: #a0aec0;
   stroke-width: 2.5px;
   stroke-opacity: 0.7;
+  fill: none;
   transition: stroke-width 0.2s, stroke-opacity 0.2s;
 }
 
-.link:hover {
+.links path:hover {
   stroke-width: 3.5px;
   stroke-opacity: 0.9;
 }
 
 .merge-link {
   stroke: #a0aec0;
-  stroke-width: 2.5px;
+  stroke-width: 2px;
   stroke-opacity: 0.7;
   stroke-dasharray: 5, 5;
-  transition: stroke-width 0.2s, stroke-opacity 0.2s;
+  fill: none;
 }
 
 .merge-link:hover {
-  stroke-width: 3.5px;
+  stroke-width: 3px;
   stroke-opacity: 0.9;
 }
 
@@ -110,7 +111,7 @@
 .commit-label {
   font-size: 11px;
   font-family: 'Fira Code', 'Consolas', monospace;
-  fill: #4a5568;
+  fill: #c0caf5;
   font-weight: 500;
   pointer-events: none;
   transition: fill 0.2s ease;
@@ -120,17 +121,16 @@
   font-size: 11px;
   font-weight: bold;
   font-family: 'Fira Code', 'Consolas', monospace;
-  fill: #2d3748;
+  fill: #7aa2f7;
   pointer-events: none;
-  text-shadow: 0px 1px 2px rgba(255,255,255,0.8);
   transition: fill 0.2s ease;
 }
 
 /* Grupo de nodos para mejor interacción */
 .node-group:hover .commit-label {
-  fill: #1a202c;
+  fill: #ffffff;
 }
 
 .node-group:hover .branch-label {
-  fill: #1a202c;
+  fill: #9ece6a;
 }

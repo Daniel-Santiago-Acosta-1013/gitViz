@@ -9,7 +9,6 @@ interface GitGraphProps {
 
 const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
   const graphRef = useRef<SVGSVGElement>(null);
-  const simulationRef = useRef<d3.Simulation<D3Node, D3Link> | null>(null);
 
   // Dimensiones del SVG y configuración del grafo
   const updateGraphDimensions = () => {
@@ -37,8 +36,9 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
     const nodes: D3Node[] = gitState.commits.map(commit => ({
       id: commit.id,
       commit,
-      x: commit.x,
-      y: commit.y
+      // Dejamos las coordenadas indefinidas, las asignaremos después
+      x: undefined,
+      y: undefined
     }));
     
     const links: D3Link[] = [];
@@ -60,43 +60,7 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
         });
       }
     });
-    
-    // Calcular la estructura de las ramas para posicionamiento más lineal
-    const branchStructure: Record<string, string[]> = {};
-    
-    // Agrupar commits por rama
-    gitState.branches.forEach(branch => {
-      branchStructure[branch.name] = [];
-    });
-    
-    gitState.commits.forEach(commit => {
-      if (branchStructure[commit.branch]) {
-        branchStructure[commit.branch].push(commit.id);
-      }
-    });
-    
-    // Configuración de la simulación de fuerzas D3 con ajustes para visualización más lineal
-    const simulation = d3.forceSimulation<D3Node, D3Link>(nodes)
-      .force("link", d3.forceLink<D3Node, D3Link>(links)
-        .id(d => d.id)
-        .distance(100)
-        .strength(1)) // Mayor fuerza para los enlaces para mantener la linealidad
-      .force("charge", d3.forceManyBody().strength(-300)) // Reducido para menos dispersión
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("x", d3.forceX(width / 2).strength(0.05))
-      .force("y", d3.forceY(height / 2).strength(0.05))
-      // Fuerza personalizada para alinear commits de la misma rama verticalmente
-      .force("branch-alignment", alpha => {
-        // Aplicar fuerza para alinear commits de la misma rama
-        nodes.forEach(node => {
-          const branchNodes = nodes.filter(n => n.commit.branch === node.commit.branch);
-          if (branchNodes.length > 1) {
-            const avgX = d3.mean(branchNodes, d => d.x) || 0;
-            node.vx = (node.vx || 0) + (avgX - (node.x || 0)) * alpha * 0.3;
-          }
-        });
-      });
-    
+
     // Crear elementos SVG
     const svg = d3.select(graphRef.current)
       .attr("viewBox", [0, 0, width, height])
@@ -104,7 +68,8 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
       .attr("height", height);
     
     // Crear contenedor con zoom
-    const g = svg.append("g");
+    const g = svg.append("g")
+      .attr("transform", `translate(${width * 0.1}, ${height / 2})`);
     
     // Añadir zoom
     svg.call(
@@ -116,25 +81,83 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
         })
     );
 
-    // Crear enlaces (líneas)
-    const link = g.append("g")
-      .attr("class", "links")
-      .selectAll("line")
-      .data(links)
-      .enter().append("line")
-      .attr("class", d => d.isMerge ? "merge-link" : "link");
+    // Calcular posiciones para layout horizontal lineal
+    const nodeById = new Map<string, D3Node>();
+    nodes.forEach(node => nodeById.set(node.id, node));
+    
+    // Crear un mapa de profundidad para cada nodo
+    const nodeDepth = new Map<string, number>();
+    
+    // Función para asignar profundidades
+    function assignDepths(commitId: string, depth: number) {
+      if (nodeDepth.has(commitId)) {
+        return;
+      }
+      
+      nodeDepth.set(commitId, depth);
+      
+      // Asignar profundidades a los padres
+      const node = nodes.find(n => n.id === commitId);
+      if (node && node.commit.parent) {
+        assignDepths(node.commit.parent, depth + 1);
+      }
+    }
+    
+    // Encontrar el commit más reciente para cada rama
+    gitState.branches.forEach(branch => {
+      const headCommitId = branch.head;
+      assignDepths(headCommitId, 0);
+    });
+    
+    // Para commits sin profundidad asignada (posible con rebase/merge)
+    nodes.forEach(node => {
+      if (!nodeDepth.has(node.id)) {
+        nodeDepth.set(node.id, 0);
+      }
+    });
+    
+    // Ajustar las posiciones de los nodos en base a su profundidad
+    const maxDepth = Math.max(...Array.from(nodeDepth.values()));
+    const nodeSpacing = Math.min(150, (width * 0.8) / (maxDepth + 1));
+    
+    // Agrupación de commits por profundidad para manejar múltiples commits con la misma profundidad
+    const depthGroups = new Map<number, string[]>();
+    
+    nodeDepth.forEach((depth, commitId) => {
+      if (!depthGroups.has(depth)) {
+        depthGroups.set(depth, []);
+      }
+      depthGroups.get(depth)?.push(commitId);
+    });
+    
+    // Asignar posiciones en X basadas en profundidad y en Y basadas en índice dentro de la misma profundidad
+    depthGroups.forEach((commitIds, depth) => {
+      const totalCommitsAtDepth = commitIds.length;
+      const ySpacing = 40;  // Espaciado vertical entre commits de la misma profundidad
+      
+      commitIds.forEach((commitId, index) => {
+        const node = nodeById.get(commitId);
+        if (node) {
+          // Posición X basada en profundidad (desde la derecha hacia la izquierda)
+          node.x = width * 0.8 - depth * nodeSpacing;
+          
+          // Posición Y centrada, con desplazamiento si hay múltiples commits
+          const yOffset = totalCommitsAtDepth > 1 
+            ? (index - (totalCommitsAtDepth - 1) / 2) * ySpacing 
+            : 0;
+          node.y = yOffset;
+        }
+      });
+    });
     
     // Crear grupos para los nodos
     const node = g.append("g")
       .attr("class", "nodes")
       .selectAll("g")
       .data(nodes)
-      .enter().append("g")
+      .join("g")
       .attr("class", "node-group")
-      .call(d3.drag<SVGGElement, D3Node>()
-        .on("start", dragStarted)
-        .on("drag", dragged)
-        .on("end", dragEnded));
+      .attr("transform", d => `translate(${d.x || 0},${d.y || 0})`);
     
     // Círculos de nodos (commits)
     node.append("circle")
@@ -168,44 +191,9 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
         const branch = gitState.branches.find(b => b.head === d.commit.id);
         return branch ? branch.name : "";
       });
-    
-    // Actualización de posición durante la simulación
-    simulation.on("tick", () => {
-      link
-        .attr("x1", d => (d.source as D3Node).x || 0)
-        .attr("y1", d => (d.source as D3Node).y || 0)
-        .attr("x2", d => (d.target as D3Node).x || 0)
-        .attr("y2", d => (d.target as D3Node).y || 0);
-      
-      node.attr("transform", d => `translate(${d.x || 0},${d.y || 0})`);
-    });
-    
-    // Guardar referencia a la simulación
-    simulationRef.current = simulation;
-
-    function dragStarted(event: d3.D3DragEvent<SVGGElement, D3Node, D3Node>) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      event.subject.fx = event.subject.x;
-      event.subject.fy = event.subject.y;
-    }
-    
-    function dragged(event: d3.D3DragEvent<SVGGElement, D3Node, D3Node>) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
-    }
-    
-    function dragEnded(event: d3.D3DragEvent<SVGGElement, D3Node, D3Node>) {
-      if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
-    }
 
     // Limpieza
-    return () => {
-      if (simulationRef.current) {
-        simulationRef.current.stop();
-      }
-    };
+    return () => {};
   }, [gitState]);
 
   // Ajustar el tamaño del grafo cuando cambia el tamaño de la ventana
@@ -217,13 +205,6 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
         d3.select(graphRef.current)
           .attr("width", width)
           .attr("height", height);
-          
-        if (simulationRef.current) {
-          simulationRef.current
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .alpha(0.3)
-            .restart();
-        }
       }
     };
     
@@ -238,4 +219,4 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
   );
 };
 
-export default GitGraph; 
+export default GitGraph;
