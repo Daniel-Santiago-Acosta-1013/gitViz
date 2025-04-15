@@ -89,16 +89,24 @@ body {
 /* Estilos para D3 */
 .links path {
     stroke-opacity: 0.8;
-    transition: all 0.3s ease;
+    transition: all 0.5s ease;
 }
 
 .links path:hover {
     stroke-opacity: 1;
     stroke-width: 3px;
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
 }
 
 .link.merge-link {
     stroke-dasharray: 5, 5;
+    animation: dash 15s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 100;
+    }
 }
 
 .nodes circle {
@@ -108,8 +116,8 @@ body {
 }
 
 .nodes circle:hover {
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.7));
 }
 
 .nodes text {
@@ -120,25 +128,66 @@ body {
 }
 
 .branch-labels rect {
-    transition: all 0.3s ease;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
 }
 
 .branch-labels text {
     font-size: 0.7rem;
     pointer-events: none;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .current-branch {
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)) !important;
+    transform: scale(1.05);
 }
 
 .head-commit {
     stroke-width: 4px !important;
-    filter: drop-shadow(0 0 4px rgba(189, 147, 249, 0.5));
+    filter: drop-shadow(0 0 6px rgba(189, 147, 249, 0.7));
 }
 
 .highlighted {
     animation: pulse 1.5s infinite;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    }
+    50% {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+    }
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    }
+}
+
+/* Nueva animación para la creación de ramas */
+@keyframes branchCreation {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(5px) scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Aplicar animación a las nuevas etiquetas de rama */
+.branch-group:last-child rect,
+.branch-group:last-child text {
+    animation: branchCreation 1s ease-out;
 }
 
 .repo-state {
@@ -397,19 +446,6 @@ body {
 .command-desc {
     color: var(--terminal-text);
     font-size: 0.7rem;
-}
-
-/* Animaciones */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.15);
-    }
-    100% {
-        transform: scale(1);
-    }
 }
 
 /* Responsive */

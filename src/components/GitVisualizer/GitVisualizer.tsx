@@ -80,7 +80,15 @@ const GitVisualizer: React.FC = () => {
     { name: 'git merge', desc: 'Combina cambios de una rama a otra' },
     { name: 'git rebase', desc: 'Reorganiza commits para una historia lineal' },
     { name: 'git reset', desc: 'Deshace cambios o commits' },
-    { name: 'git status', desc: 'Muestra el estado del repositorio' }
+    { name: 'git status', desc: 'Muestra el estado del repositorio' },
+    { name: 'git log', desc: 'Muestra el historial de commits' },
+    { name: 'git diff', desc: 'Muestra diferencias entre commits' },
+    { name: 'git fetch', desc: 'Descarga objetos y referencias de otro repositorio' },
+    { name: 'git pull', desc: 'Incorpora cambios de un repositorio remoto' },
+    { name: 'git push', desc: 'Actualiza referencias remotas' },
+    { name: 'git stash', desc: 'Guarda cambios locales en un área temporal' },
+    { name: 'git tag', desc: 'Crea, lista o elimina tags de referencia' },
+    { name: 'git cherry-pick', desc: 'Aplica los cambios de commits específicos' }
   ];
 
   // Dimensiones del SVG y configuración del grafo
@@ -133,16 +141,41 @@ const GitVisualizer: React.FC = () => {
       }
     });
     
-    // Configuración de la simulación de fuerzas D3
+    // Calcular la estructura de las ramas para posicionamiento más lineal
+    const branchStructure: Record<string, string[]> = {};
+    
+    // Agrupar commits por rama
+    gitState.branches.forEach(branch => {
+      branchStructure[branch.name] = [];
+    });
+    
+    gitState.commits.forEach(commit => {
+      if (branchStructure[commit.branch]) {
+        branchStructure[commit.branch].push(commit.id);
+      }
+    });
+    
+    // Configuración de la simulación de fuerzas D3 con ajustes para visualización más lineal
     const simulation = d3.forceSimulation<D3Node, D3Link>(nodes)
       .force("link", d3.forceLink<D3Node, D3Link>(links)
         .id(d => d.id)
         .distance(100)
-        .strength(0.7))
-      .force("charge", d3.forceManyBody().strength(-500))
+        .strength(1)) // Mayor fuerza para los enlaces para mantener la linealidad
+      .force("charge", d3.forceManyBody().strength(-300)) // Reducido para menos dispersión
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("x", d3.forceX(width / 2).strength(0.1))
-      .force("y", d3.forceY(height / 2).strength(0.1));
+      .force("x", d3.forceX(width / 2).strength(0.05))
+      .force("y", d3.forceY(height / 2).strength(0.05))
+      // Fuerza personalizada para alinear commits de la misma rama verticalmente
+      .force("branch-alignment", alpha => {
+        // Aplicar fuerza para alinear commits de la misma rama
+        nodes.forEach(node => {
+          const branchNodes = nodes.filter(n => n.commit.branch === node.commit.branch);
+          if (branchNodes.length > 1) {
+            const avgX = d3.mean(branchNodes, d => d.x) || 0;
+            node.vx = (node.vx || 0) + (avgX - (node.x || 0)) * alpha * 0.3;
+          }
+        });
+      });
     
     // Crear elementos SVG
     const svg = d3.select(graphRef.current)
@@ -212,7 +245,7 @@ const GitVisualizer: React.FC = () => {
     node.append("title")
       .text(d => `${d.commit.id}: ${d.commit.message}`);
     
-    // Añadir etiquetas de rama
+    // Añadir etiquetas de rama con animación mejorada
     const branchLabels = g.append("g")
       .attr("class", "branch-labels")
       .selectAll("g")
@@ -243,10 +276,36 @@ const GitVisualizer: React.FC = () => {
       const textWidth = textNode?.getComputedTextLength() || 0;
       d3.select(this).select("rect").attr("width", textWidth + 16);
     });
-        
-    // Actualizar posiciones en cada tick de la simulación
+
+    // Actualizar posiciones en cada tick de la simulación  
     simulation.on("tick", () => {
-      // Actualizar posición de enlaces
+      // Aplicar posicionamiento lineal vertical para commits de la misma rama
+      const branches = Object.keys(branchStructure);
+      
+      branches.forEach((branchName, branchIndex) => {
+        const branchCommits = branchStructure[branchName];
+        const branchNode = nodes.find(n => n.commit.branch === branchName);
+        
+        if (branchNode && branchNode.x) {
+          // Calcular posición X para la rama (espaciado horizontal entre ramas)
+          const branchX = width * 0.2 + (branchIndex * (width * 0.6 / branches.length));
+          
+          // Asignar posición X a todos los commits de esta rama
+          branchCommits.forEach((commitId, index) => {
+            const node = nodes.find(n => n.id === commitId);
+            if (node) {
+              // Impulsar hacia la posición X de esta rama
+              node.vx = (node.vx || 0) + (branchX - (node.x || 0)) * 0.1;
+              
+              // Aplicar una fuerza para que los commits más recientes estén más arriba
+              const commitY = height * 0.8 - (index * 80);
+              node.vy = (node.vy || 0) + (commitY - (node.y || 0)) * 0.1;
+            }
+          });
+        }
+      });
+      
+      // Actualizar posición de enlaces con curvas mejoradas
       link.attr("d", d => {
         const source = typeof d.source === 'string' ? nodes.find(n => n.id === d.source) : d.source;
         const target = typeof d.target === 'string' ? nodes.find(n => n.id === d.target) : d.target;
@@ -254,13 +313,24 @@ const GitVisualizer: React.FC = () => {
         if (!source || !target || !source.x || !source.y || !target.x || !target.y) return "";
         
         if (d.isMerge) {
-          // Curva para enlaces de merge
+          // Curva para enlaces de merge más pronunciada y clara
           const midX = (source.x + target.x) / 2;
-          const midY = source.y - 50;
+          const midY = (source.y + target.y) / 2 - 50;
           return `M${source.x},${source.y} Q${midX},${midY} ${target.x},${target.y}`;
         } else {
-          // Línea recta para enlaces normales
-          return `M${source.x},${source.y} L${target.x},${target.y}`;
+          // Para commits de la misma rama, curva suave para visualización más elegante
+          const sourceCommit = gitState.commits.find(c => c.id === (typeof d.source === 'string' ? d.source : d.source.id));
+          const targetCommit = gitState.commits.find(c => c.id === (typeof d.target === 'string' ? d.target : d.target.id));
+          
+          if (sourceCommit && targetCommit && sourceCommit.branch === targetCommit.branch) {
+            // Línea más directa para commits en la misma rama
+            return `M${source.x},${source.y} L${target.x},${target.y}`;
+          } else {
+            // Curva para ramas diferentes
+            const controlX = (source.x + target.x) / 2;
+            const controlY = (source.y + target.y) / 2 + 30;
+            return `M${source.x},${source.y} Q${controlX},${controlY} ${target.x},${target.y}`;
+          }
         }
       });
       
@@ -378,25 +448,59 @@ const GitVisualizer: React.FC = () => {
           handleAdd(args.slice(1));
           break;
         case 'commit':
+        case 'ci': // Alias común para commit
+        case 'cmt':
           handleCommit(args.slice(1));
           break;
         case 'branch':
+        case 'br': // Alias común para branch
           handleBranch(args.slice(1));
           break;
         case 'checkout':
+        case 'co': // Alias común para checkout
+        case 'switch': // Git switch es equivalente a checkout para cambiar ramas
           handleCheckout(args.slice(1));
           break;
         case 'merge':
+        case 'mg': // Alias para merge
           handleMerge(args.slice(1));
           break;
         case 'rebase':
+        case 'rb': // Alias para rebase
           handleRebase(args.slice(1));
           break;
         case 'reset':
+        case 'rs': // Alias para reset
           handleReset(args.slice(1));
           break;
         case 'status':
+        case 'st': // Alias común para status
           handleStatus();
+          break;
+        case 'log':
+          handleLog(args.slice(1));
+          break;
+        case 'diff':
+          handleDiff(args.slice(1));
+          break;
+        case 'fetch':
+          handleFetch(args.slice(1));
+          break;
+        case 'pull':
+          handlePull(args.slice(1));
+          break;
+        case 'push':
+          handlePush(args.slice(1));
+          break;
+        case 'stash':
+          handleStash(args.slice(1));
+          break;
+        case 'tag':
+          handleTag(args.slice(1));
+          break;
+        case 'cherry-pick':
+        case 'cp':
+          handleCherryPick(args.slice(1));
           break;
         default:
           setError(`Subcomando Git no soportado: ${subCommand}`);
@@ -505,45 +609,184 @@ const GitVisualizer: React.FC = () => {
   const handleBranch = (args: string[]) => {
     if (!args.length) {
       // Listar ramas
-      const branches = gitState.branches.map(b => 
-        b.name === gitState.currentBranch ? `* ${b.name}` : `  ${b.name}`
+      const branchList = gitState.branches.map(b => 
+        `${b.name === gitState.currentBranch ? '* ' : '  '}${b.name}`
       ).join('\n');
+      setExplanation(`Ramas en el repositorio:\n${branchList}`);
+      return;
+    }
+
+    // Verificar opciones
+    let branchName = args[0];
+    let startPoint: string | null = null;
+    
+    // Opciones como -d, -D (eliminar), -m (mover/renombrar), etc.
+    if (branchName.startsWith('-')) {
+      const option = branchName;
       
-      setExplanation(`Muestra las ramas existentes:\n${branches}`);
+      if (['-d', '-D', '--delete'].includes(option) && args.length > 1) {
+        // Eliminar rama
+        branchName = args[1];
+        
+        if (branchName === gitState.currentBranch) {
+          setError(`No se puede eliminar la rama activa: ${branchName}`);
+          return;
+        }
+        
+        if (!gitState.branches.some(b => b.name === branchName)) {
+          setError(`La rama ${branchName} no existe`);
+          return;
+        }
+        
+        // Verificar si la rama está totalmente fusionada (simulado)
+        if (option === '-d') {
+          // Simulamos que la rama está fusionada
+          const isMerged = true; // En una implementación real, esto sería una verificación
+          
+          if (!isMerged) {
+            setError(`La rama ${branchName} no está totalmente fusionada`);
+            return;
+          }
+        }
+        
+        // Eliminar la rama
+        const updatedBranches = gitState.branches.filter(b => b.name !== branchName);
+        
+        setGitState({
+          ...gitState,
+          branches: updatedBranches
+        });
+        
+        setExplanation(`La rama ${branchName} ha sido eliminada.`);
+        return;
+      }
+      
+      if (['-m', '--move', '-c', '--copy'].includes(option) && args.length > 1) {
+        // Renombrar o copiar rama
+        const newName = args[1];
+        const sourceRama = args.length > 2 ? args[2] : gitState.currentBranch;
+        
+        if (gitState.branches.some(b => b.name === newName)) {
+          setError(`La rama ${newName} ya existe`);
+          return;
+        }
+        
+        const sourceBranch = gitState.branches.find(b => b.name === sourceRama);
+        if (!sourceBranch) {
+          setError(`La rama ${sourceRama} no existe`);
+          return;
+        }
+        
+        if (['-m', '--move'].includes(option)) {
+          // Renombrar rama
+          const updatedBranches = gitState.branches.map(b => 
+            b.name === sourceRama ? { ...b, name: newName } : b
+          );
+          
+          // Actualizar la rama actual si estamos renombrando la rama activa
+          const newCurrentBranch = sourceRama === gitState.currentBranch ? newName : gitState.currentBranch;
+          
+          // Actualizar la propiedad branch de los commits
+          const updatedCommits = gitState.commits.map(c => 
+            c.branch === sourceRama ? { ...c, branch: newName } : c
+          );
+          
+          setGitState({
+            ...gitState,
+            branches: updatedBranches,
+            currentBranch: newCurrentBranch,
+            commits: updatedCommits
+          });
+          
+          setExplanation(`Rama ${sourceRama} renombrada a ${newName}.`);
+        } else {
+          // Copiar rama
+          const newBranch = { ...sourceBranch, name: newName };
+          
+          setGitState({
+            ...gitState,
+            branches: [...gitState.branches, newBranch]
+          });
+          
+          setExplanation(`Rama ${sourceRama} copiada a ${newName}.`);
+        }
+        
+        return;
+      }
+      
+      // Otras opciones como -a (todas), -r (remotas), etc.
+      setExplanation(`Opción ${option} no implementada en esta simulación.`);
       return;
     }
     
-    // Crear nueva rama
-    const newBranchName = args[0];
+    // Buscar argumento de punto de inicio (startpoint)
+    if (args.length > 1) {
+      startPoint = args[1];
+      
+      // Verificar si el punto de inicio existe
+      const startCommit = gitState.commits.find(c => c.id === startPoint);
+      if (!startCommit) {
+        setError(`El commit ${startPoint} no existe`);
+        return;
+      }
+    }
     
-    // Verificar si ya existe
-    if (gitState.branches.some(b => b.name === newBranchName)) {
-      setError(`La rama '${newBranchName}' ya existe`);
+    // Verificar si la rama ya existe
+    if (gitState.branches.some(b => b.name === branchName)) {
+      setError(`La rama ${branchName} ya existe`);
       return;
     }
     
-    // Obtener commit actual
-    const currentCommit = gitState.commits.find(c => c.isHead);
-    if (!currentCommit) return;
+    // Obtener commit actual (HEAD) si no se especificó un punto de inicio
+    const headCommit = gitState.commits.find(c => c.isHead);
+    if (!headCommit && !startPoint) {
+      setError('No hay commits en el repositorio');
+      return;
+    }
     
-    // Generar color aleatorio para la rama
-    const colors = ['#e74c3c', '#3498db', '#9b59b6', '#f1c40f', '#1abc9c', '#e67e22'];
+    const startCommitId = startPoint || headCommit?.id || '';
+    
+    // Obtener color para la nueva rama
+    const colors = ['#2ecc71', '#3498db', '#e74c3c', '#f1c40f', '#9b59b6', '#1abc9c', '#e67e22'];
     const usedColors = gitState.branches.map(b => b.color);
     const availableColors = colors.filter(c => !usedColors.includes(c));
-    const color = availableColors.length ? 
-      availableColors[Math.floor(Math.random() * availableColors.length)] : 
-      `#${Math.floor(Math.random()*16777215).toString(16)}`;
+    const branchColor = availableColors.length ? availableColors[0] : colors[Math.floor(Math.random() * colors.length)];
     
-    // Crear nueva rama
+    // Crear la nueva rama
+    const newBranch = {
+      name: branchName,
+      color: branchColor,
+      head: startCommitId
+    };
+    
+    // Destacar temporalmente el commit de inicio para la animación
+    const updatedCommits = gitState.commits.map(c => ({
+      ...c,
+      highlighted: c.id === startCommitId
+    }));
+    
+    // Actualizar el estado con la nueva rama y commits destacados
     setGitState({
       ...gitState,
-      branches: [
-        ...gitState.branches,
-        { name: newBranchName, color, head: currentCommit.id }
-      ]
+      branches: [...gitState.branches, newBranch],
+      commits: updatedCommits
     });
     
-    setExplanation(`Crea una nueva rama '${newBranchName}' que apunta al commit actual.`);
+    // Mostrar animación de creación de rama
+    setTimeout(() => {
+      // Quitar el resaltado después de la animación
+      const finalCommits = gitState.commits.map(c => ({
+        ...c,
+        highlighted: false
+      }));
+      
+      setGitState(prevState => ({
+        ...prevState,
+        commits: finalCommits
+      }));
+    }, 1500);
+    
+    setExplanation(`Nueva rama '${branchName}' creada, apuntando a ${startCommitId}.`);
   };
 
   const handleCheckout = (args: string[]) => {
@@ -849,6 +1092,56 @@ const GitVisualizer: React.FC = () => {
   };
 
   const suggestions = getCommandSuggestions();
+
+  // Nuevos manejadores para comandos Git adicionales
+  const handleLog = (args: string[]) => {
+    // Simular comando git log
+    const logEntries = gitState.commits
+      .slice()
+      .reverse()
+      .map(commit => {
+        const branch = gitState.branches.find(b => b.name === commit.branch);
+        return `commit ${commit.id}${commit.isHead ? ' (HEAD)' : ''}\nAuthor: Usuario\nDate: ${new Date().toISOString()}\n\n    ${commit.message}\n`;
+      })
+      .join('\n');
+    
+    setExplanation(`Git Log:\n${logEntries}`);
+  };
+
+  const handleDiff = (args: string[]) => {
+    // Simulación simple de git diff
+    setExplanation('Comando git diff: Muestra las diferencias entre commits, el directorio de trabajo y el índice.');
+  };
+
+  const handleFetch = (args: string[]) => {
+    // Simulación simple de git fetch
+    setExplanation('Comando git fetch: Descarga objetos y referencias de otro repositorio.');
+  };
+
+  const handlePull = (args: string[]) => {
+    // Simulación simple de git pull
+    setExplanation('Comando git pull: Incorpora cambios de un repositorio remoto en la rama actual.');
+  };
+
+  const handlePush = (args: string[]) => {
+    // Simulación simple de git push
+    setExplanation('Comando git push: Actualiza referencias remotas junto con objetos asociados.');
+  };
+
+  const handleStash = (args: string[]) => {
+    // Simulación simple de git stash
+    setExplanation('Comando git stash: Guarda cambios locales en un área temporal.');
+  };
+
+  const handleTag = (args: string[]) => {
+    // Simulación simple de git tag
+    setExplanation('Comando git tag: Crea, lista o elimina tags de referencia.');
+  };
+
+  const handleCherryPick = (args: string[]) => {
+    // Simulación simple de git cherry-pick
+    setExplanation('Comando git cherry-pick: Aplica los cambios introducidos por algunos commits existentes.');
+  };
 
   return (
     <div className="git-visualizer">
