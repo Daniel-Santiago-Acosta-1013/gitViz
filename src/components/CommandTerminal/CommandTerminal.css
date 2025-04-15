@@ -1,29 +1,38 @@
 .terminal {
   width: 100%;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
-  background-color: #1e1e2e;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  background-color: #1a1b26;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 15px rgba(130, 170, 255, 0.15);
   transition: all 0.3s ease;
+  border: 1px solid #2f334d;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
 }
 
 .terminal:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(130, 170, 255, 0.2);
 }
 
 .terminal-header {
   display: flex;
   align-items: center;
-  background-color: #16161e;
+  background-color: #0c0c16;
   padding: 10px 15px;
-  border-bottom: 1px solid #0d0f12;
+  border-bottom: 1px solid #2f334d;
+  position: relative;
+  height: 35px;
 }
 
 .terminal-title {
-  color: #d9e0ee;
+  color: #c8d3f5;
   font-size: 14px;
   font-weight: 600;
-  margin-left: 20px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 0.5px;
 }
 
 .terminal-button {
@@ -32,47 +41,73 @@
   border-radius: 50%;
   margin-right: 8px;
   transition: opacity 0.2s;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 .terminal-button:hover {
   opacity: 0.8;
 }
 
+.terminal-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0.5;
+}
+
 .terminal-button.red {
-  background-color: #ff5f56;
+  background-color: #ff757f;
 }
 
 .terminal-button.yellow {
-  background-color: #ffbd2e;
+  background-color: #ffc777;
 }
 
 .terminal-button.green {
-  background-color: #27c93f;
+  background-color: #91d7e3;
 }
 
 .terminal-content {
   padding: 18px;
-  color: #f0f0f0;
-  font-family: 'Fira Code', 'Consolas', monospace;
+  color: #c8d3f5;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 14px;
   line-height: 1.6;
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #444 #1e1e2e;
+  scrollbar-color: #444 #1a1b26;
+  background-color: #1a1b26;
+  background-image: 
+    linear-gradient(
+      rgba(30, 30, 46, 0.6) 1px, 
+      transparent 1px
+    );
+  background-size: 100% 24px;
 }
 
 .terminal-content::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .terminal-content::-webkit-scrollbar-track {
-  background: #1e1e2e;
+  background: rgba(30, 30, 46, 0.6);
+  border-radius: 3px;
 }
 
 .terminal-content::-webkit-scrollbar-thumb {
-  background-color: #444;
+  background-color: #2f334d;
   border-radius: 4px;
+}
+
+.terminal-content::-webkit-scrollbar-thumb:hover {
+  background-color: #82aaff;
 }
 
 .history-item {
@@ -80,10 +115,16 @@
   white-space: pre-wrap;
   word-break: break-all;
   opacity: 0.9;
+  padding: 3px 0;
+  position: relative;
+}
+
+.history-item:last-child {
+  margin-bottom: 15px;
 }
 
 .prompt {
-  color: #50fa7b;
+  color: #91d7e3;
   font-weight: bold;
   margin-right: 10px;
 }
@@ -92,26 +133,26 @@
   display: flex;
   align-items: center;
   margin-top: 15px;
-  padding: 6px 0;
-  border-top: 1px dashed #444;
+  padding: 10px 0;
+  border-top: 1px dashed #2f334d;
 }
 
 .command-input {
   flex: 1;
   background-color: transparent;
   border: none;
-  color: #f8f9fa;
-  font-family: 'Fira Code', 'Consolas', monospace;
+  color: #c8d3f5;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 14px;
   padding: 8px 5px;
   outline: none;
   margin: 0 8px;
-  caret-color: #50fa7b;
+  caret-color: #91d7e3;
 }
 
 .execute-button {
-  background-color: #4d5bce;
-  color: white;
+  background-color: #82aaff;
+  color: #0c0c16;
   border: none;
   padding: 8px 14px;
   border-radius: 6px;
@@ -122,11 +163,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .execute-button:hover {
-  background-color: #5a6ad2;
+  background-color: #c099ff;
   transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .execute-button:active {
@@ -137,15 +181,16 @@
   background-color: #586185;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .error-message {
-  color: #ff5555;
+  color: #ff757f;
   margin: 12px 0;
   padding: 10px;
-  background-color: rgba(255, 85, 85, 0.1);
+  background-color: rgba(255, 117, 127, 0.1);
   border-radius: 5px;
-  border-left: 3px solid #ff5555;
+  border-left: 3px solid #ff757f;
 }
 
 .suggestions {
@@ -156,18 +201,87 @@
 }
 
 .suggestion-item {
-  background-color: #3d425b;
-  color: #f8f9fa;
-  padding: 4px 10px;
+  background-color: #2f334d;
+  color: #c8d3f5;
+  padding: 5px 10px;
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .suggestion-item:hover {
-  background-color: #4d5bce;
+  background-color: #82aaff;
+  color: #0c0c16;
   transform: translateY(-2px);
-  border-color: #6272a4;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Añadir cursor parpadeante al final del prompt cuando está vacío */
+.command-input-container::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 16px;
+  background-color: #91d7e3;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .terminal-content {
+    padding: 14px;
+    font-size: 13px;
+  }
+  
+  .command-input {
+    font-size: 13px;
+  }
+  
+  .execute-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal-header {
+    padding: 8px 12px;
+    height: 30px;
+  }
+  
+  .terminal-title {
+    font-size: 12px;
+  }
+  
+  .terminal-button {
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+  }
+  
+  .terminal-content {
+    padding: 10px;
+    font-size: 12px;
+  }
+  
+  .command-input {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+  
+  .execute-button {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  
+  .prompt {
+    margin-right: 8px;
+  }
 }

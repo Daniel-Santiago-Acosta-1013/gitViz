@@ -1,19 +1,25 @@
 /* GitVisualizer.css */
 :root {
-  --background-color: #1a1b26;
-  --terminal-bg: #24283b;
-  --terminal-text: #a9b1d6;
-  --accent-color: #7aa2f7;
-  --secondary-color: #bb9af7;
-  --success-color: #9ece6a;
-  --warning-color: #e0af68;
-  --error-color: #f7768e;
-  --text-color: #c0caf5;
-  --border-color: #414868;
-  --panel-bg: #24283b;
-  --branch-color: #7dcfff;
-  --commit-color: #e0af68;
-  --hover-color: #414868;
+  --background-color: #0c0c16;
+  --terminal-bg: #1a1b26;
+  --terminal-text: #c8d3f5;
+  --accent-color: #82aaff;
+  --secondary-color: #c099ff;
+  --success-color: #91d7e3;
+  --warning-color: #ffc777;
+  --error-color: #ff757f;
+  --text-color: #c8d3f5;
+  --border-color: #2f334d;
+  --panel-bg: #1a1b26;
+  --branch-color: #4fd6be;
+  --commit-color: #ffc777;
+  --hover-color: #2f334d;
+
+  /* Terminal themes and sizes */
+  --terminal-radius: 8px;
+  --terminal-header-height: 35px;
+  --terminal-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --terminal-glow: 0 0 15px rgba(130, 170, 255, 0.15);
 }
 
 * {
@@ -23,7 +29,7 @@
 }
 
 body {
-  font-family: 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   background-color: var(--background-color);
   color: var(--text-color);
   line-height: 1.6;
@@ -34,30 +40,33 @@ body {
   flex-direction: column;
   height: 100vh;
   background-color: var(--background-color);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .app-header {
   background-color: var(--terminal-bg);
   color: var(--text-color);
-  padding: 12px 20px;
+  padding: 15px 20px;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid var(--border-color);
   z-index: 10;
+  position: relative;
+  background-image: linear-gradient(to right, var(--terminal-bg), #232538, var(--terminal-bg));
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
   color: var(--accent-color);
+  text-shadow: 0 0 10px rgba(130, 170, 255, 0.3);
+  letter-spacing: 0.5px;
 }
 
 .description {
   color: var(--text-color);
-  font-size: 0.9rem;
-  margin-top: 4px;
+  font-size: 0.95rem;
+  margin-top: 6px;
   opacity: 0.8;
 }
 
@@ -65,7 +74,8 @@ body {
   display: flex;
   flex: 1;
   overflow: hidden;
-  background-color: var(--border-color);
+  background-color: rgba(47, 51, 77, 0.3);
+  padding: 10px;
 }
 
 .visualization-container {
@@ -80,12 +90,12 @@ body {
   flex: 1;
   position: relative;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--terminal-radius);
   background-color: var(--panel-bg);
   overflow: hidden;
   margin: 12px 12px 0 12px;
-  min-height: 300px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  min-height: 250px;
+  box-shadow: var(--terminal-shadow);
 }
 
 .git-svg {
@@ -116,9 +126,9 @@ body {
 
 .terminal {
   background-color: var(--terminal-bg);
-  border-radius: 8px;
+  border-radius: var(--terminal-radius);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--terminal-shadow), var(--terminal-glow);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -126,18 +136,34 @@ body {
 }
 
 .terminal-header {
-  background-color: var(--border-color);
-  padding: 6px 10px;
+  background-color: var(--background-color);
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   position: relative;
+  height: var(--terminal-header-height);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .terminal-button {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  margin-right: 6px;
+  margin-right: 8px;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.terminal-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0.5;
 }
 
 .terminal-button.red {
@@ -157,41 +183,56 @@ body {
   left: 50%;
   transform: translateX(-50%);
   color: var(--text-color);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .terminal-content {
-  padding: 12px;
+  padding: 15px;
   color: var(--terminal-text);
-  font-family: 'Fira Code', monospace;
-  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.9rem;
   overflow-y: auto;
   flex: 1;
+  background-color: var(--terminal-bg);
+  background-image: 
+    linear-gradient(
+      rgba(30, 30, 46, 0.6) 1px, 
+      transparent 1px
+    );
+  background-size: 100% 24px;
 }
 
 .history-item {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   word-break: break-all;
+  padding: 3px 0;
+  position: relative;
 }
 
 .prompt {
   color: var(--success-color);
-  margin-right: 6px;
+  margin-right: 8px;
+  font-weight: bold;
 }
 
 .error-message {
   color: var(--error-color);
-  margin: 6px 0;
+  margin: 8px 0;
+  padding: 10px;
+  background-color: rgba(255, 117, 127, 0.1);
+  border-radius: 4px;
+  border-left: 3px solid var(--error-color);
 }
 
 .command-input-container {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 10px;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
-  padding: 5px 8px;
+  padding: 8px 12px;
   border: 1px solid var(--border-color);
 }
 
@@ -204,6 +245,7 @@ body {
   font-size: inherit;
   padding: 4px;
   outline: none;
+  caret-color: var(--success-color);
 }
 
 .execute-button {
@@ -211,157 +253,237 @@ body {
   color: var(--background-color);
   border: none;
   border-radius: 4px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   margin-left: 8px;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.2s;
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .execute-button:hover {
   background-color: var(--secondary-color);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.execute-button:active {
+  transform: translateY(0);
 }
 
 .execute-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .suggestions {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .suggestion-item {
   background-color: var(--border-color);
   color: var(--terminal-text);
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .suggestion-item:hover {
-  background-color: var(--hover-color);
-  transform: translateY(-1px);
+  background-color: var(--accent-color);
+  color: var(--background-color);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .command-list {
   background-color: var(--terminal-bg);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: var(--terminal-radius);
+  overflow: hidden;
+  box-shadow: var(--terminal-shadow);
   flex: 1;
-  overflow-y: auto;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--border-color);
+  height: 100%;
 }
 
 .command-list h3 {
+  margin: 0;
+  padding: 12px 15px;
   color: var(--accent-color);
-  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--background-color);
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 6px;
-  font-size: 0.9rem;
+  text-align: center;
+  height: var(--terminal-header-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .commands-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  overflow-y: auto;
+  gap: 10px;
   flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--terminal-bg);
 }
 
 .command-item {
-  background-color: var(--panel-bg);
+  background-color: rgba(47, 51, 77, 0.4);
   border-radius: 6px;
-  padding: 10px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid transparent;
+  border-left: 4px solid var(--accent-color);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  min-height: 70px;
+  justify-content: center;
 }
 
 .command-item:hover {
-  background-color: var(--hover-color);
+  background-color: rgba(47, 51, 77, 0.7);
   transform: translateY(-2px);
-  border-color: var(--border-color);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-left-color: var(--success-color);
 }
 
 .command-name {
+  font-weight: 600;
   color: var(--success-color);
-  font-weight: bold;
-  margin-bottom: 4px;
-  font-size: 0.85rem;
+  margin-bottom: 2px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.command-name::before {
+  content: '$ ';
+  margin-right: 5px;
+  color: var(--accent-color);
+  opacity: 0.8;
 }
 
 .command-desc {
-  color: var(--terminal-text);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  line-height: 1.4;
+  opacity: 0.8;
 }
 
-/* Responsive */
+/* Mejoras de responsive */
 @media (max-width: 1200px) {
   .bottom-container {
     flex-direction: column;
+    min-height: auto;
   }
   
   .terminal-container,
   .command-list-container {
-    flex: 1;
+    min-height: 250px;
+    flex: auto;
   }
 }
 
 @media (max-width: 768px) {
   .bottom-container {
-    margin: 8px;
-    gap: 8px;
+    margin: 10px;
+    gap: 10px;
   }
   
   .git-graph {
-    margin: 8px 8px 0 8px;
+    margin: 10px 10px 0 10px;
     min-height: 200px;
+  }
+  
+  .command-list h3 {
+    font-size: 0.9rem;
+  }
+  
+  .terminal-title {
+    font-size: 0.8rem;
+  }
+  
+  .command-input, .terminal-content {
+    font-size: 0.85rem;
+  }
+  
+  .terminal-content {
+    padding: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .app-header {
-    padding: 8px;
+    padding: 10px;
   }
   
   .app-header h1 {
-    font-size: 1.2rem;
+    font-size: 20px;
   }
   
   .description {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
+  }
+  
+  .git-graph {
+    min-height: 180px;
+  }
+  
+  .terminal-container,
+  .command-list-container {
+    min-height: 220px;
+  }
+  
+  .command-name {
+    font-size: 0.85rem;
+  }
+  
+  .command-desc {
+    font-size: 0.75rem;
+  }
+  
+  .execute-button {
+    font-size: 0.8rem;
+    padding: 5px 10px;
   }
 }
 
-/* Estilos para la barra de desplazamiento */
+/* Estilizado de scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--panel-bg);
+  background: rgba(30, 30, 46, 0.6);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background-color: var(--border-color);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color);
+  background-color: var(--accent-color);
 }

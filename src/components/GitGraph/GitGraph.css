@@ -1,136 +1,171 @@
 .git-graph {
-  width: 100%;
-  height: 100%;
-  min-height: 400px;
   position: relative;
-  border-radius: 10px;
+  border: 1px solid #2f334d;
+  border-radius: 8px;
+  background-color: #1a1b26;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  background: #1e1e2e;
-  border: 1px solid #414868;
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 15px rgba(130, 170, 255, 0.15);
+  display: flex;
+  flex-direction: column;
 }
 
-.git-graph:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+.git-graph::before {
+  content: 'Git Graph Terminal';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 35px;
+  background-color: #0c0c16;
+  color: #c8d3f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid #2f334d;
+  z-index: 10;
+  letter-spacing: 0.5px;
+}
+
+.git-graph::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 50px;
+  height: 12px;
+  display: flex;
+  z-index: 20;
+}
+
+.git-graph::after::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ff757f;
+  margin-right: 6px;
 }
 
 .git-svg {
   width: 100%;
   height: 100%;
-  background-color: #1e1e2e;
-  transition: background-color 0.3s ease;
+  display: block;
+  margin-top: 35px;
+  background-image: 
+    radial-gradient(#2f334d 1px, transparent 1px),
+    radial-gradient(#2f334d 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
 }
 
-/* Estilos para los enlaces entre nodos */
-.links path {
-  stroke: #a0aec0;
-  stroke-width: 2.5px;
-  stroke-opacity: 0.7;
-  fill: none;
-  transition: stroke-width 0.2s, stroke-opacity 0.2s;
-}
-
-.links path:hover {
-  stroke-width: 3.5px;
-  stroke-opacity: 0.9;
-}
-
-.merge-link {
-  stroke: #a0aec0;
-  stroke-width: 2px;
-  stroke-opacity: 0.7;
-  stroke-dasharray: 5, 5;
-  fill: none;
-}
-
-.merge-link:hover {
-  stroke-width: 3px;
-  stroke-opacity: 0.9;
-}
-
-/* Estilos para los nodos de commit */
+/* Styles for commit nodes and paths */
 .commit-node {
-  stroke: #fff;
-  stroke-width: 2px;
-  fill: #4a5568;
-  cursor: pointer;
-  filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.1));
-  transition: all 0.2s ease;
+  fill: #1a1b26;
+  stroke: #82aaff;
+  stroke-width: 2;
+  transition: all 0.3s ease;
 }
 
 .commit-node:hover {
-  stroke-width: 3px;
-  transform: scale(1.1);
-  filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.2));
+  fill: #82aaff;
+  stroke: #c8d3f5;
+  filter: drop-shadow(0 0 5px rgba(130, 170, 255, 0.5));
 }
 
 .commit-node.highlighted {
-  stroke: #ffd43b;
-  stroke-width: 3px;
-  filter: drop-shadow(0px 0px 8px rgba(255, 212, 59, 0.5));
+  fill: #ffc777;
+  stroke: #c8d3f5;
 }
 
 .commit-node.head {
-  stroke: #38b2ac;
-  stroke-width: 3px;
-  filter: drop-shadow(0px 0px 8px rgba(56, 178, 172, 0.5));
+  fill: #91d7e3;
+  stroke: #c8d3f5;
+  stroke-width: 2.5;
 }
 
-/* Colores específicos para ramas con colores más atractivos */
 .branch-main {
-  fill: #38b2ac; /* Teal */
+  fill: #4fd6be;
+  stroke: #2f334d;
 }
 
-.branch-develop {
-  fill: #4c51bf; /* Indigo */
-}
-
-.branch-feature {
-  fill: #805ad5; /* Purple */
-}
-
-.branch-hotfix {
-  fill: #e53e3e; /* Red */
-}
-
-.branch-release {
-  fill: #dd6b20; /* Orange */
-}
-
-/* Añadir más colores para diferentes tipos de ramas */
-.branch-bugfix {
-  fill: #d69e2e; /* Yellow */
-}
-
-.branch-experimental {
-  fill: #319795; /* Teal darker */
-}
-
-/* Estilos para las etiquetas */
+/* Text labels */
 .commit-label {
-  font-size: 11px;
-  font-family: 'Fira Code', 'Consolas', monospace;
-  fill: #c0caf5;
-  font-weight: 500;
+  fill: #c8d3f5;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   pointer-events: none;
-  transition: fill 0.2s ease;
+  user-select: none;
+  font-weight: 500;
 }
 
 .branch-label {
+  fill: #ffc777;
   font-size: 11px;
-  font-weight: bold;
-  font-family: 'Fira Code', 'Consolas', monospace;
-  fill: #7aa2f7;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 600;
   pointer-events: none;
-  transition: fill 0.2s ease;
+  user-select: none;
 }
 
-/* Grupo de nodos para mejor interacción */
-.node-group:hover .commit-label {
-  fill: #ffffff;
+/* Links (paths) between commits */
+.commit-link {
+  stroke: #2f334d;
+  stroke-width: 2;
+  stroke-dasharray: none;
+  fill: none;
 }
 
-.node-group:hover .branch-label {
-  fill: #9ece6a;
+.commit-link.merge {
+  stroke-dasharray: 4;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .git-graph::before {
+    height: 30px;
+    font-size: 13px;
+  }
+  
+  .git-svg {
+    margin-top: 30px;
+  }
+  
+  .commit-label {
+    font-size: 11px;
+  }
+  
+  .branch-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .git-graph::before {
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .git-svg {
+    margin-top: 28px;
+    background-size: 15px 15px;
+    background-position: 0 0, 7.5px 7.5px;
+  }
+  
+  .commit-node {
+    stroke-width: 1.5;
+  }
+  
+  .commit-label {
+    font-size: 10px;
+  }
+  
+  .branch-label {
+    font-size: 9px;
+  }
+  
+  .commit-link {
+    stroke-width: 1.5;
+  }
 }

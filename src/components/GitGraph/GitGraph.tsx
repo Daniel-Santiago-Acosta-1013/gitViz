@@ -19,7 +19,7 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
     
     return {
       width: container.clientWidth,
-      height: container.clientHeight
+      height: container.clientHeight - 35 // Compensate for the title bar
     };
   };
 
@@ -149,6 +149,32 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
         }
       });
     });
+    
+    // Crear enlaces antes que los nodos para que queden detrás
+    const linkElements = g.append("g")
+      .attr("class", "links")
+      .selectAll("path")
+      .data(links)
+      .join("path")
+      .attr("class", d => d.isMerge ? "commit-link merge" : "commit-link")
+      .attr("d", d => {
+        const source = nodeById.get(d.source.toString());
+        const target = nodeById.get(d.target.toString());
+        
+        if (!source || !target || source.x === undefined || source.y === undefined || 
+            target.x === undefined || target.y === undefined) {
+          return "";
+        }
+        
+        // Draw a curved line from source to target
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy) * 1.2; // Make curve a bit wider
+        
+        return d.isMerge 
+          ? `M${source.x},${source.y}C${source.x-30},${source.y} ${target.x+30},${target.y} ${target.x},${target.y}` 
+          : `M${source.x},${source.y}L${target.x},${target.y}`;
+      });
     
     // Crear grupos para los nodos
     const node = g.append("g")
