@@ -53,6 +53,7 @@
   height: 100%;
   display: block;
   margin-top: 35px;
+  background-color: #0f1118;
   background-image: 
     radial-gradient(#2f334d 1px, transparent 1px),
     radial-gradient(#2f334d 1px, transparent 1px);
@@ -62,16 +63,16 @@
 
 /* Styles for commit nodes and paths */
 .commit-node {
-  fill: #1a1b26;
-  stroke: #82aaff;
-  stroke-width: 2;
+  fill: #cccccc;
+  stroke: #555555;
+  stroke-width: 3;
   transition: all 0.3s ease;
 }
 
 .commit-node:hover {
   fill: #82aaff;
   stroke: #c8d3f5;
-  filter: drop-shadow(0 0 5px rgba(130, 170, 255, 0.5));
+  filter: drop-shadow(0 0 8px rgba(130, 170, 255, 0.7));
 }
 
 .commit-node.highlighted {
@@ -80,45 +81,70 @@
 }
 
 .commit-node.head {
-  fill: #91d7e3;
-  stroke: #c8d3f5;
-  stroke-width: 2.5;
+  fill: #9ece6a;
+  stroke: #555555;
+  stroke-width: 3;
 }
 
-.branch-main {
-  fill: #4fd6be;
-  stroke: #2f334d;
+/* Branch boxes */
+.branch-box {
+  fill: #e0af68;
+  stroke: #555555;
+  stroke-width: 2;
+  opacity: 0.95;
 }
 
-/* Text labels */
-.commit-label {
-  fill: #c8d3f5;
+/* HEAD indicator */
+.head-indicator {
+  fill: #9ece6a;
+  stroke: #555555;
+  stroke-width: 2;
+}
+
+.head-text {
+  fill: #1a1b26;
   font-size: 12px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  pointer-events: none;
-  user-select: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.branch-label {
-  fill: #ffc777;
-  font-size: 11px;
+/* Branch name text */
+.branch-name {
+  fill: #1a1b26;
+  font-size: 12px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-weight: 600;
-  pointer-events: none;
-  user-select: none;
+}
+
+/* Commit hash labels */
+.commit-hash {
+  fill: #ffffff;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 600;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.7);
 }
 
 /* Links (paths) between commits */
 .commit-link {
-  stroke: #2f334d;
-  stroke-width: 2;
+  stroke: #ffffff;
+  stroke-width: 1.0;
   stroke-dasharray: none;
   fill: none;
 }
 
 .commit-link.merge {
-  stroke-dasharray: 4;
+  stroke-dasharray: 6;
+}
+
+/* Define la apariencia de la flecha */
+#arrowhead path, .arrowhead {
+  fill: #ffffff;
+}
+
+/* Container styling to ensure centering */
+.git-graph-container {
+  transform-origin: center center;
 }
 
 /* Responsive styles */
@@ -132,12 +158,12 @@
     margin-top: 30px;
   }
   
-  .commit-label {
-    font-size: 11px;
+  .commit-hash {
+    font-size: 10px;
   }
   
-  .branch-label {
-    font-size: 10px;
+  .branch-name, .head-text {
+    font-size: 11px;
   }
 }
 
@@ -157,12 +183,12 @@
     stroke-width: 1.5;
   }
   
-  .commit-label {
-    font-size: 10px;
+  .commit-hash {
+    font-size: 9px;
   }
   
-  .branch-label {
-    font-size: 9px;
+  .branch-name, .head-text {
+    font-size: 10px;
   }
   
   .commit-link {
