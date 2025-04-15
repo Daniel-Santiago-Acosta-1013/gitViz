@@ -942,6 +942,7 @@ const GitVisualizer: React.FC = () => {
                 suggestions={suggestions}
                 supportedCommands={supportedCommands}
               />
+              {explanation && <div className="command-explanation">{explanation}</div>}
             </div>
             <div className="command-list-container">
               <CommandList 
