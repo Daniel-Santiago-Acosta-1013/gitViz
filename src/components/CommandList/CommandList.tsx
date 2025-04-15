@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './CommandList.css';
 import { CommandDefinition } from '../../types/git';
+import CommandModal from '../CommandModal/CommandModal';
 
 interface CommandListProps {
   commands: CommandDefinition[];
@@ -8,14 +9,24 @@ interface CommandListProps {
 }
 
 const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [selectedCommand, setSelectedCommand] = useState<CommandDefinition | null>(null);
+
   // Add clear command to the list of available commands
   const allCommands = [
     { name: 'clear', desc: 'Limpiar la terminal' },
     ...commands
   ];
 
-  const handleCommandClick = (cmdName: string) => {
-    setCommand(cmdName);
+  const handleCommandClick = (cmd: CommandDefinition) => {
+    // Open the modal with command information
+    setSelectedCommand(cmd);
+    setModalOpen(true);
+  };
+
+  const handleExecuteCommand = (command: CommandDefinition) => {
+    // Execute the command in the terminal
+    setCommand(command.name);
   };
 
   return (
@@ -26,13 +37,21 @@ const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
           <div
             key={index}
             className="command-item"
-            onClick={() => handleCommandClick(cmd.name)}
+            onClick={() => handleCommandClick(cmd)}
           >
-            <div className="command-name">{cmd.name}</div>
+            <div className="command-name">$ {cmd.name}</div>
             <div className="command-desc">{cmd.desc}</div>
           </div>
         ))}
       </div>
+
+      {/* Command Modal */}
+      <CommandModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        command={selectedCommand}
+        onExecute={handleExecuteCommand}
+      />
     </div>
   );
 };

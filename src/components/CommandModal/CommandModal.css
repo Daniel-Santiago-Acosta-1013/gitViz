@@ -1,0 +1,517 @@
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal Container */
+.command-modal {
+  width: 80%;
+  max-width: 800px;
+  background-color: #1e2230;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2d3748;
+  padding: 15px 20px;
+  border-bottom: 1px solid #4a5568;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 1.2rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #e2e8f0;
+}
+
+/* Terminal Container */
+.terminal-container {
+  background-color: #1a1d2d;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Terminal Header */
+.terminal-header {
+  display: flex;
+  background-color: #2d3748;
+  padding: 8px 15px;
+  border-bottom: 1px solid #4a5568;
+}
+
+.terminal-controls {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.control.red {
+  background-color: #e53e3e;
+}
+
+.control.yellow {
+  background-color: #ecc94b;
+}
+
+.control.green {
+  background-color: #48bb78;
+}
+
+.terminal-title {
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+/* Terminal Body */
+.terminal-body {
+  padding: 20px;
+  color: #e2e8f0;
+  font-family: 'Courier New', monospace;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Terminal Prompt */
+.terminal-prompt {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.prompt-symbol {
+  color: #48bb78;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background-color: #e2e8f0;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Terminal Output */
+.terminal-output {
+  padding: 10px;
+  margin-top: 20px;
+  border: 1px solid #4a5568;
+  border-radius: 6px;
+  background-color: #2d3748;
+  animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.command-description {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  color: #90cdf4;
+}
+
+/* Visual Container */
+.visual-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 30px 0;
+  min-height: 150px;
+  background-color: #1a1d2d;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+/* Command Explanation */
+.command-explanation {
+  margin: 20px 0;
+}
+
+.command-explanation h4 {
+  color: #90cdf4;
+  margin-bottom: 10px;
+}
+
+.command-explanation p {
+  line-height: 1.6;
+}
+
+/* Command Options */
+.command-options {
+  margin-top: 20px;
+  border-top: 1px solid #4a5568;
+  padding-top: 15px;
+}
+
+.command-options h4 {
+  color: #90cdf4;
+  margin-bottom: 10px;
+}
+
+.command-options ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.command-options li {
+  margin-bottom: 8px;
+}
+
+.command-options code {
+  background-color: #1a1d2d;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #f6ad55;
+}
+
+/* Animation Styles */
+.command-animation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  animation: slide-in 0.8s ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Git init animation */
+.folder-icon, .git-folder-icon {
+  width: 80px;
+  height: 60px;
+  background-color: #4a5568;
+  border-radius: 5px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.folder-icon:before {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 10px;
+  background-color: #4a5568;
+  top: -10px;
+  left: 10px;
+  border-radius: 5px 5px 0 0;
+}
+
+.git-folder-icon {
+  background-color: #2b6cb0;
+  color: white;
+  font-weight: bold;
+}
+
+/* Git add animation */
+.file-icon {
+  width: 60px;
+  height: 70px;
+  background-color: #e2e8f0;
+  border-radius: 5px;
+  position: relative;
+}
+
+.file-icon.modified {
+  border: 2px solid #f6ad55;
+}
+
+.file-icon:before {
+  content: "";
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background-color: #f6ad55;
+  top: 10px;
+  right: 10px;
+  border-radius: 50%;
+}
+
+.staging-area {
+  width: 120px;
+  height: 70px;
+  background-color: #2b6cb0;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
+
+/* Git commit animation */
+.commit-icon {
+  width: 70px;
+  height: 70px;
+  background-color: #48bb78;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Arrow icon */
+.arrow-icon {
+  margin: 0 20px;
+  font-size: 2rem;
+  color: #90cdf4;
+  animation: arrow-pulse 1.5s infinite;
+}
+
+@keyframes arrow-pulse {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+/* Branch visuals */
+.branch-line {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.branch-line:before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #4a5568;
+}
+
+.branch-line.main:before {
+  background-color: #48bb78;
+}
+
+.branch-line.feature:before {
+  background-color: #f6ad55;
+}
+
+.branch-line.active:before {
+  background-color: #90cdf4;
+}
+
+.commit-dot {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 30px;
+  z-index: 1;
+  color: #4a5568;
+}
+
+.branch-line.main .commit-dot {
+  color: #48bb78;
+}
+
+.branch-line.feature .commit-dot {
+  color: #f6ad55;
+}
+
+.branch-line.active .commit-dot {
+  color: #90cdf4;
+}
+
+.commit-dot.merge {
+  color: #b794f4;
+  animation: highlight 2s infinite;
+}
+
+@keyframes highlight {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.branch-name {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.head-pointer {
+  background-color: #2b6cb0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.8rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.merge-arrow {
+  position: absolute;
+  color: #b794f4;
+  font-size: 1.5rem;
+  transform: rotate(-45deg);
+  animation: move-up 2s infinite;
+}
+
+@keyframes move-up {
+  0%, 100% {
+    transform: rotate(-45deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(-45deg) translate(-5px, -5px);
+  }
+}
+
+/* Generic animation for other commands */
+.command-animation.generic {
+  width: 200px;
+  height: 120px;
+  background-color: #2d3748;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.command-animation.generic:after {
+  content: "git";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #90cdf4;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.command-animation.generic:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(to right, #48bb78, #90cdf4, #f6ad55);
+  animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+/* Modal Actions */
+.modal-actions {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.execute-button {
+  background-color: #48bb78;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.execute-button:hover {
+  background-color: #38a169;
+  transform: translateY(-2px);
+}
+
+.execute-button:active {
+  transform: translateY(0);
+} 
