@@ -199,11 +199,8 @@ const GitVisualizer: React.FC = () => {
   };
 
   const handleCommit = (args: string[]) => {
-    // Verificar si hay cambios para commit
-    if (gitState.stage.length === 0) {
-      setError('No hay cambios preparados para commit. Usa "git add <archivo>" primero.');
-      return;
-    }
+    // Nota: Removemos la verificación que impide commits sin cambios en stage
+    // Ya que queremos permitir crear commits directamente como si fueran ramas
     
     // Verificar mensaje de commit
     let message = "Commit sin mensaje";
