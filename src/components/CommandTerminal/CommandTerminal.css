@@ -247,7 +247,7 @@
 /* Estilo para la sugerencia activa (cuando usamos Tab o flechas) */
 .suggestion-item.active {
   background-color: #82aaff;
-  color: #0c0c16;
+  color: #ffffff9c;
   transform: translateY(-2px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   border: 1px solid #c099ff;
