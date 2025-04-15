@@ -554,15 +554,6 @@ const CommandModal: React.FC<CommandModalProps> = ({ isOpen, onClose, command, o
         </div>
         
         <div className="terminal-container">
-          <div className="terminal-header">
-            <div className="terminal-controls">
-              <span className="control red"></span>
-              <span className="control yellow"></span>
-              <span className="control green"></span>
-            </div>
-            <div className="terminal-title">Terminal</div>
-          </div>
-          
           <div className="terminal-body">
             <div className="terminal-prompt">
               <span className="prompt-symbol">$</span> {typedText}

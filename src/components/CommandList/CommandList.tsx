@@ -39,7 +39,7 @@ const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
             className="command-item"
             onClick={() => handleCommandClick(cmd)}
           >
-            <div className="command-name">$ {cmd.name}</div>
+            <div className="command-name">{cmd.name}</div>
             <div className="command-desc">{cmd.desc}</div>
           </div>
         ))}
