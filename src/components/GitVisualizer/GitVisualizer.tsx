@@ -205,6 +205,13 @@ const GitVisualizer: React.FC = () => {
     // Procesar comando
     const parts = command.trim().split(/\s+/);
     
+    // Handle clear command
+    if (parts[0] === 'clear') {
+      setHistory([]);
+      setCommand('');
+      return;
+    }
+    
     if (parts[0] === 'git') {
       processGitCommand(parts.slice(1));
     } else {

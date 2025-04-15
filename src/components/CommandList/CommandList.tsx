@@ -1,6 +1,6 @@
 import React from 'react';
-import { CommandDefinition } from '../../types/git';
 import './CommandList.css';
+import { CommandDefinition } from '../../types/git';
 
 interface CommandListProps {
   commands: CommandDefinition[];
@@ -8,20 +8,25 @@ interface CommandListProps {
 }
 
 const CommandList: React.FC<CommandListProps> = ({ commands, setCommand }) => {
+  // Add clear command to the list of available commands
+  const allCommands = [
+    { name: 'clear', desc: 'Limpiar la terminal' },
+    ...commands
+  ];
+
   const handleCommandClick = (cmdName: string) => {
-    setCommand(cmdName + ' ');
+    setCommand(cmdName);
   };
-  
+
   return (
     <div className="command-list">
       <h3>Comandos Soportados</h3>
       <div className="commands-grid">
-        {commands.map((cmd, i) => (
-          <div 
-            key={i} 
+        {allCommands.map((cmd, index) => (
+          <div
+            key={index}
             className="command-item"
             onClick={() => handleCommandClick(cmd.name)}
-            aria-label={`Ejecutar: ${cmd.name}`}
           >
             <div className="command-name">{cmd.name}</div>
             <div className="command-desc">{cmd.desc}</div>
