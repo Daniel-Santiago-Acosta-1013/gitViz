@@ -922,9 +922,9 @@ const GitVisualizer: React.FC = () => {
   return (
     <div className="git-visualizer">
       <header className="app-header">
-        <h1>Visualizador de Comandos Git</h1>
+        <h1> GitViz </h1>
         <p className="description">
-          Escribe comandos Git para ver animaciones y entender cómo funcionan.
+          Escribe comandos Git para entender cómo funcionan.
         </p>
       </header>
       <div className="content-container">

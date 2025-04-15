@@ -22,6 +22,15 @@
   --terminal-glow: 0 0 15px rgba(130, 170, 255, 0.15);
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -38,8 +47,11 @@ body {
 .git-visualizer {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   background-color: var(--background-color);
+  position: relative;
+  overflow-y: visible;
 }
 
 .app-header {
@@ -73,7 +85,7 @@ body {
 .content-container {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   background-color: rgba(47, 51, 77, 0.3);
   padding: 10px;
 }
@@ -82,7 +94,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   background-color: var(--background-color);
 }
 
@@ -405,9 +417,32 @@ body {
 }
 
 @media (max-width: 768px) {
+  html, body {
+    height: auto;
+    overflow-y: auto;
+  }
+  
+  .git-visualizer {
+    height: auto;
+    min-height: 100%;
+    overflow-y: visible;
+  }
+
+  .content-container {
+    overflow: visible;
+    height: auto;
+  }
+  
+  .visualization-container {
+    overflow: visible;
+    height: auto;
+  }
+  
   .bottom-container {
     margin: 10px;
     gap: 10px;
+    overflow: visible;
+    height: auto;
   }
   
   .git-graph {
@@ -433,6 +468,33 @@ body {
 }
 
 @media (max-width: 480px) {
+  html, body {
+    height: auto;
+    overflow-y: auto;
+  }
+  
+  .git-visualizer {
+    min-height: 100%;
+    height: auto;
+    overflow-y: visible;
+    position: static;
+  }
+  
+  .content-container {
+    height: auto;
+    overflow: visible;
+  }
+  
+  .visualization-container {
+    height: auto;
+    overflow: visible;
+  }
+  
+  .bottom-container {
+    height: auto;
+    overflow: visible;
+  }
+  
   .app-header {
     padding: 10px;
   }
@@ -451,7 +513,13 @@ body {
   
   .terminal-container,
   .command-list-container {
-    min-height: 220px;
+    min-height: auto;
+    max-height: none;
+  }
+  
+  .terminal,
+  .command-list {
+    max-height: none;
   }
   
   .command-name {

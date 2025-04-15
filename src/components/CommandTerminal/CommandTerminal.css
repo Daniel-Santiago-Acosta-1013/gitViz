@@ -408,9 +408,18 @@
 
 /* Responsive styles */
 @media (max-width: 768px) {
+  .terminal {
+    overflow: visible;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+  }
+  
   .terminal-content {
     padding: 14px;
     font-size: 13px;
+    max-height: 300px;
+    overflow-y: auto;
   }
   
   .command-input {
@@ -424,10 +433,16 @@
 
   .suggestions {
     max-height: 120px;
+    overflow-y: auto;
   }
 }
 
 @media (max-width: 480px) {
+  .terminal {
+    overflow: visible;
+    max-height: none;
+  }
+  
   .terminal-header {
     padding: 8px 12px;
     height: 30px;
@@ -446,6 +461,8 @@
   .terminal-content {
     padding: 10px;
     font-size: 12px;
+    max-height: 250px;
+    overflow-y: auto;
   }
   
   .command-input {
@@ -466,5 +483,6 @@
     max-height: 100px;
     flex-direction: column;
     gap: 5px;
+    overflow-y: auto;
   }
 }
