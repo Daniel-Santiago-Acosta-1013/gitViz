@@ -190,6 +190,52 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
         node.x = -depth * nodeSpacing;
         node.y = commitLaneY.get(node.id) ?? 0; // Fallback to lane 0 if unassigned
     });
+
+    // 5. Crear Enlaces (Flechas) - Adjusted Logic
+    const link = g.append("g")
+      .attr("class", "links")
+      .selectAll("path")
+      .data(links)
+      .join("path")
+      .attr("class", d => `commit-link ${d.isMerge ? 'merge' : ''}`)
+      .attr("marker-end", "url(#arrowhead)")
+      .attr("d", d => {
+        const sourceNode = nodeById.get(d.source as string);
+        const targetNode = nodeById.get(d.target as string);
+        
+        if (!sourceNode || !targetNode || sourceNode.x === undefined || targetNode.x === undefined || 
+            sourceNode.y === undefined || targetNode.y === undefined) {
+          return "";
+        }
+        
+        const nodeRadius = 24; // Match node radius
+        const dx = targetNode.x - sourceNode.x;
+        const dy = targetNode.y - sourceNode.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const normFactor = distance > 0 ? distance : 1;
+
+        // Start point (edge of source circle)
+        const sourceX = sourceNode.x + (nodeRadius * dx / normFactor);
+        const sourceY = sourceNode.y + (nodeRadius * dy / normFactor);
+        
+        // End point (edge of target circle)
+        const targetX = targetNode.x - (nodeRadius * dx / normFactor);
+        const targetY = targetNode.y - (nodeRadius * dy / normFactor);
+        
+        if (sourceNode.y === targetNode.y) {
+          // Straight line within the same lane
+          return `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
+        } else {
+          // L-shaped line for connecting different lanes
+          const midX = (sourceNode.x + targetNode.x) / 2; // Use center X for the turn
+          return `
+            M ${sourceX} ${sourceY}
+            L ${midX} ${sourceY} 
+            L ${midX} ${targetY}
+            L ${targetX} ${targetY}
+          `;
+        }
+      });
     
     // 6. Añadir marcador de flecha - Adjusted RefX
     svg.append("defs").append("marker")
@@ -236,6 +282,8 @@ const GitGraph: React.FC<GitGraphProps> = ({ gitState }) => {
     
     // 10. HEAD indicator (Position logic might need check)
     const headCommit = nodes.find(n => n.commit.isHead);
+    const headBranch = gitState.branches.find(b => b.head === headCommit?.id);
+    const headLaneY = headCommit && headBranch ? branchLanes.get(headBranch.name) : 0;
 
     if (headCommit && headCommit.x !== undefined && headCommit.y !== undefined) {
       // Position HEAD label consistently above the branch label if possible
